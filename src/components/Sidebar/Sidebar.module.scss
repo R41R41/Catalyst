@@ -1,0 +1,55 @@
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+  padding: 10px;
+}
+
+.file {
+  padding: 8px;
+  cursor: pointer;
+  color: #fff;
+
+  &:hover {
+    background-color: #2a2a2a;
+  }
+
+  &.active {
+    background-color: #37373d;
+  }
+
+  &.dragging {
+    background-color: #3d3d3d;
+    opacity: 0.8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.header {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 10px;
+}
+
+.addButton {
+  width: 100%;
+  padding: 8px;
+  background-color: #2d2d2d;
+  border: 1px solid #404040;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 4px;
+
+  &:hover {
+    background-color: #3d3d3d;
+  }
+
+  &:active {
+    background-color: #4d4d4d;
+  }
+}
+
+.fileList {
+  min-height: 100px;
+}

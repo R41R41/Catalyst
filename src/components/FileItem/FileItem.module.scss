@@ -1,0 +1,20 @@
+.file {
+  padding: 8px;
+  cursor: pointer;
+  color: #fff;
+  height: 24px;
+
+  &:hover {
+    background-color: #2a2a2a;
+  }
+
+  &.active {
+    background-color: #37373d;
+  }
+
+  &.dragging {
+    background-color: #3d3d3d;
+    opacity: 0.8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+}
