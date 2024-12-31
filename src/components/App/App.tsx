@@ -1,18 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Editor from "../Editor/Editor";
 import Sidebar from "../Sidebar/Sidebar";
-import { File } from "../../types/File";
+import { FileData } from "../../types/File";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { fetchFiles, updateFile, createFile } from "../../services/api";
 
-const initialFiles: File[] = [
+const initialFiles: FileData[] = [
   { id: "file-1", name: "シナリオ", content: "" },
   { id: "file-2", name: "設定", content: "" },
 ];
 
 const App: React.FC = () => {
-  const [files, setFiles] = useState<File[]>(initialFiles);
+  const [files, setFiles] = useState<FileData[]>(initialFiles);
   const [activeFileId, setActiveFileId] = useState(files[0].id);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadFiles = async () => {
+      try {
+        console.log("Fetching files...");
+        const loadedFiles = await fetchFiles();
+        console.log("Received files:", loadedFiles);
+
+        if (loadedFiles && loadedFiles.length > 0) {
+          console.log("Using loaded files");
+          setFiles(loadedFiles);
+          setActiveFileId(loadedFiles[0].id);
+        } else {
+          console.log("Using initial files");
+          setFiles(initialFiles);
+          setActiveFileId(initialFiles[0].id);
+        }
+      } catch (error) {
+        console.error("Failed to load files:", error);
+        setError("ファイルの読み込みに失敗しました");
+        setFiles(initialFiles);
+      } finally {
+        console.log("Setting isLoading to false");
+        setIsLoading(false);
+      }
+    };
+    loadFiles();
+  }, []);
 
   const handleFileSelect = (fileId: string) => {
     setActiveFileId(fileId);
@@ -28,21 +59,23 @@ const App: React.FC = () => {
     setFiles(items);
   };
 
-  const handleContentChange = (content: string) => {
+  const handleContentChange = async (content: string) => {
     setFiles(
       files.map((file) =>
         file.id === activeFileId ? { ...file, content } : file
       )
     );
+    await updateFile(activeFileId, content);
   };
 
-  const handleAddFile = () => {
-    const newFile: File = {
+  const handleAddFile = async () => {
+    const newFile: FileData = {
       id: `file-${files.length + 1}`,
       name: `new_file_${files.length + 1}.ts`,
       content: "",
     };
-    setFiles([...files, newFile]);
+    const savedFile = await createFile(newFile);
+    setFiles([...files, savedFile]);
   };
 
   const activeFile = files.find((file) => file.id === activeFileId);
@@ -50,17 +83,25 @@ const App: React.FC = () => {
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className={styles.container}>
-        <Sidebar
-          files={files}
-          activeFileId={activeFileId}
-          onFileSelect={handleFileSelect}
-          onAddFile={handleAddFile}
-          setFiles={setFiles}
-        />
-        <Editor
-          content={activeFile?.content ?? ""}
-          onContentChange={handleContentChange}
-        />
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div style={{ color: "red" }}>{error}</div>
+        ) : (
+          <>
+            <Sidebar
+              files={files}
+              activeFileId={activeFileId}
+              onFileSelect={handleFileSelect}
+              onAddFile={handleAddFile}
+              setFiles={setFiles}
+            />
+            <Editor
+              content={activeFile?.content ?? ""}
+              onContentChange={handleContentChange}
+            />
+          </>
+        )}
       </div>
     </DragDropContext>
   );

@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "module": "commonjs",
     "jsx": "react",
     "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },

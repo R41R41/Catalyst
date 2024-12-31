@@ -1,14 +1,14 @@
 import React from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import styles from "./Sidebar.module.scss";
-import { File } from "../../types/File";
+import { FileData } from "../../types/File";
 
 interface SidebarProps {
-  files: File[];
+  files: FileData[];
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
   onAddFile: () => void;
-  setFiles: (files: File[]) => void;
+  setFiles: (files: FileData[]) => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({

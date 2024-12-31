@@ -6,6 +6,11 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Prerequisites
+
+- MongoDB (Install with `sudo apt-get install mongodb`)
+- Node.js (Install with `sudo apt-get install nodejs`)
+
 ## Available Scripts
 
 In the project directory, you can run:

@@ -13,6 +13,7 @@ const Editor: React.FC<EditorProps> = ({ content, onContentChange }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const completionRef = useRef<HTMLSpanElement | null>(null);
+  const originalContentRef = useRef<string>("");
 
   const insertCompletion = useCallback((completionText: string) => {
     console.log("insertCompletion", completionText);
@@ -48,11 +49,15 @@ const Editor: React.FC<EditorProps> = ({ content, onContentChange }) => {
       timeoutRef.current = setTimeout(async () => {
         if (editorRef.current) {
           const content = editorRef.current.textContent || "";
-          console.log("content", content);
           if (content) {
+            originalContentRef.current = content;
+
             const result = await getCompletion(content);
-            console.log("result", result);
-            if (result) {
+
+            if (
+              result &&
+              editorRef.current?.textContent === originalContentRef.current
+            ) {
               setCompletion(result);
               insertCompletion(result);
               setIsCompleted(true);
