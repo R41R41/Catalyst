@@ -11,5 +11,5 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node"
   },
-  "include": ["src"]
+  "include": ["src", "src/services/api.ts", "src/types/scss.d.ts"]
 }

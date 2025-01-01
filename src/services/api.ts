@@ -1,6 +1,6 @@
 import { FileData } from "../types/File";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = `http://${process.env.REACT_APP_SERVER_IP_ADDRESS}:5000/api`;
 
 export const fetchFiles = async () => {
   try {
