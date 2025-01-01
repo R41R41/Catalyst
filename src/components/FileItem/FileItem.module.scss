@@ -1,4 +1,29 @@
+.contextMenu {
+  position: absolute;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+  button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+  }
+}
+
 .file {
+  position: relative;
   padding: 8px;
   cursor: pointer;
   color: #fff;

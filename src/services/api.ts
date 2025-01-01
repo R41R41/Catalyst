@@ -40,3 +40,19 @@ export const createFile = async (file: FileData) => {
   });
   return response.json();
 };
+
+export const deleteFile = async (fileId: string) => {
+  await fetch(`${API_URL}/files/${fileId}`, {
+    method: "DELETE",
+  });
+};
+
+export const renameFile = async (fileId: string, newName: string) => {
+  await fetch(`${API_URL}/files/${fileId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ name: newName }),
+  });
+};

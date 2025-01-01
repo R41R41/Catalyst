@@ -2,12 +2,15 @@ import React from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import styles from "./Sidebar.module.scss";
 import { FileData } from "../../types/File";
+import FileItem from "../FileItem/FileItem";
 
 interface SidebarProps {
   files: FileData[];
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
   onAddFile: () => void;
+  onRenameFile: (fileId: string, newName: string) => void;
+  onDeleteFile: (fileId: string) => void;
   setFiles: (files: FileData[]) => void;
 }
 
@@ -16,6 +19,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   activeFileId,
   onFileSelect,
   onAddFile,
+  onRenameFile,
+  onDeleteFile,
   setFiles,
 }) => {
   return (
@@ -35,17 +40,16 @@ const Sidebar: React.FC<SidebarProps> = ({
             {files.map((file, index) => (
               <Draggable key={file.id} draggableId={file.id} index={index}>
                 {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    className={`${styles.file} ${
-                      file.id === activeFileId ? styles.active : ""
-                    } ${snapshot.isDragging ? styles.dragging : ""}`}
+                  <FileItem
+                    id={file.id}
+                    name={file.name}
+                    isActive={file.id === activeFileId}
+                    provided={provided}
+                    snapshot={snapshot}
                     onClick={() => onFileSelect(file.id)}
-                  >
-                    {file.name}
-                  </div>
+                    onRename={onRenameFile}
+                    onDelete={onDeleteFile}
+                  />
                 )}
               </Draggable>
             ))}

@@ -7,7 +7,7 @@ const app = express();
 app.use(
   cors({
     origin: "http://localhost:3000",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type"],
     credentials: true,
   })
@@ -42,6 +42,32 @@ app.put("/api/files/:id", async (req, res) => {
     new: true,
   });
   res.json(file);
+});
+
+// ファイルの削除
+app.delete("/api/files/:id", async (req, res) => {
+  try {
+    await File.findOneAndDelete({ id: req.params.id });
+    res.status(200).json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("ファイル削除エラー:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// ファイル名の変更
+app.patch("/api/files/:id", async (req, res) => {
+  try {
+    const file = await File.findOneAndUpdate(
+      { id: req.params.id },
+      { name: req.body.name },
+      { new: true }
+    );
+    res.json(file);
+  } catch (error) {
+    console.error("ファイル名変更エラー:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 app.listen(5000, () => {

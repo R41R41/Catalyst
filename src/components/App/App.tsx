@@ -4,7 +4,13 @@ import Sidebar from "../Sidebar/Sidebar";
 import { FileData } from "../../types/File";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
-import { fetchFiles, updateFile, createFile } from "../../services/api";
+import {
+  fetchFiles,
+  updateFile,
+  createFile,
+  deleteFile,
+  renameFile,
+} from "../../services/api";
 
 const initialFiles: FileData[] = [
   { id: "file-1", name: "シナリオ", content: "" },
@@ -78,6 +84,20 @@ const App: React.FC = () => {
     setFiles([...files, savedFile]);
   };
 
+  const handleDeleteFile = async (fileId: string) => {
+    await deleteFile(fileId);
+    setFiles(files.filter((file) => file.id !== fileId));
+  };
+
+  const handleRenameFile = async (fileId: string, newName: string) => {
+    await renameFile(fileId, newName);
+    setFiles(
+      files.map((file) =>
+        file.id === fileId ? { ...file, name: newName } : file
+      )
+    );
+  };
+
   const activeFile = files.find((file) => file.id === activeFileId);
 
   return (
@@ -94,6 +114,8 @@ const App: React.FC = () => {
               activeFileId={activeFileId}
               onFileSelect={handleFileSelect}
               onAddFile={handleAddFile}
+              onRenameFile={handleRenameFile}
+              onDeleteFile={handleDeleteFile}
               setFiles={setFiles}
             />
             <Editor
