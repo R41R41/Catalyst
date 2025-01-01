@@ -23,11 +23,12 @@
 }
 
 .file {
+  font-size: 10px;
   position: relative;
   padding: 8px;
   cursor: pointer;
   color: #fff;
-  height: 24px;
+  height: 16px;
 
   &:hover {
     background-color: #2a2a2a;

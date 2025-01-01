@@ -1,0 +1,32 @@
+.section {
+  border-bottom: 1px solid #333;
+}
+
+.sectionHeader {
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  background-color: #252525;
+
+  &:hover {
+    background-color: #2a2a2a;
+  }
+}
+
+.addButton {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  background: transparent;
+  border: 1px dashed #ccc;
+  cursor: pointer;
+  color: #666;
+
+  &:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+  }
+}

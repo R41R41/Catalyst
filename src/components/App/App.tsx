@@ -9,10 +9,15 @@ import {
   createScenario,
   deleteScenario,
   renameScenario,
+  fetchCharacters,
+  fetchSettings,
+  createCharacter,
+  createSetting,
 } from "../../services/api";
-import { FileData } from "../../types/File";
+import { FileData, FileCategory } from "../../types/File";
 import { fetchPrompts, updatePrompt, Prompt } from "../../services/promptApi";
 import PromptModal from "../PromptModal/PromptModal";
+import { v4 as uuidv4 } from "uuid";
 
 const App: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);
@@ -23,32 +28,52 @@ const App: React.FC = () => {
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
   useEffect(() => {
-    const loadScenarios = async () => {
+    const loadAllFiles = async () => {
       try {
         setIsLoading(true);
-        const scenarios = await fetchScenarios();
-        if (scenarios && scenarios.length > 0) {
-          setFiles(scenarios);
-          setActiveFileId(scenarios[0].id);
-        } else {
-          const defaultScenario = {
-            id: "scenario-1",
-            name: "新規シナリオ",
-            content: "",
-          };
-          const savedScenario = await createScenario(defaultScenario);
-          setFiles([savedScenario]);
-          setActiveFileId(savedScenario.id);
+
+        // 各カテゴリーのデータを取得
+        const [scenarios, characters, settings] = await Promise.all([
+          fetchScenarios(),
+          fetchCharacters(),
+          fetchSettings(),
+        ]);
+
+        console.log("scenarios", scenarios);
+        console.log("characters", characters);
+        console.log("settings", settings);
+
+        // カテゴリープロパティを追加して結合
+        const allFiles = [
+          ...scenarios.map((s) => ({
+            ...s,
+            category: "scenario" as FileCategory,
+          })),
+          ...characters.map((c) => ({
+            ...c,
+            category: "character" as FileCategory,
+          })),
+          ...settings.map((s) => ({
+            ...s,
+            category: "setting" as FileCategory,
+          })),
+        ];
+
+        console.log("allFiles", allFiles);
+
+        if (allFiles.length > 0) {
+          setFiles(allFiles);
+          setActiveFileId(allFiles[0].id);
         }
       } catch (error) {
-        console.error("Failed to load scenarios:", error);
-        setError("シナリオの読み込みに失敗しました");
+        console.error("Failed to load files:", error);
+        setError("ファイルの読み込みに失敗しました");
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadScenarios();
+    loadAllFiles();
   }, []);
 
   const loadPrompts = useCallback(async () => {
@@ -63,8 +88,6 @@ const App: React.FC = () => {
   useEffect(() => {
     loadPrompts();
   }, [loadPrompts]);
-
-  console.log(prompts);
 
   const handleFileSelect = (fileId: string) => {
     setActiveFileId(fileId);
@@ -89,14 +112,17 @@ const App: React.FC = () => {
     await updateScenario(activeFileId, content);
   };
 
-  const handleAddFile = async () => {
+  const handleAddFile = async (category: FileCategory) => {
     const newFile: FileData = {
-      id: `file-${files.length + 1}`,
-      name: `新規シナリオ_${files.length + 1}`,
+      id: uuidv4(),
+      name: `新規${getCategoryName(category)}_${
+        files.filter((f) => f.category === category).length + 1
+      }`,
+      category: category,
       content: "",
     };
     const savedFile = await createScenario(newFile);
-    setFiles([...files, savedFile]);
+    setFiles([...files, { ...savedFile, category }]);
   };
 
   const handleDeleteFile = async (fileId: string) => {
@@ -133,6 +159,17 @@ const App: React.FC = () => {
   };
 
   const activeFile = files.find((file) => file.id === activeFileId);
+
+  const getCategoryName = (category: FileCategory): string => {
+    switch (category) {
+      case "character":
+        return "キャラクター";
+      case "setting":
+        return "設定";
+      case "scenario":
+        return "シナリオ";
+    }
+  };
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>

@@ -1,14 +1,13 @@
-import React from "react";
-import { Droppable, Draggable } from "@hello-pangea/dnd";
+import React, { useState } from "react";
 import styles from "./Sidebar.module.scss";
-import { FileData } from "../../types/File";
-import FileItem from "../FileItem/FileItem";
+import { FileData, FileCategory } from "../../types/File";
+import SidebarSection from "../SidebarSection/SidebarSection";
 
 interface SidebarProps {
   files: FileData[];
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
-  onAddFile: () => void;
+  onAddFile: (category: FileCategory) => void;
   onRenameFile: (fileId: string, newName: string) => void;
   onDeleteFile: (fileId: string) => void;
   setFiles: (files: FileData[]) => void;
@@ -25,40 +24,76 @@ const Sidebar: React.FC<SidebarProps> = ({
   setFiles,
   onEditPrompt,
 }) => {
+  const [expandedSections, setExpandedSections] = useState<FileCategory[]>([
+    "character",
+    "setting",
+    "scenario",
+  ]);
+
+  const toggleSection = (category: FileCategory) => {
+    setExpandedSections((prev) =>
+      prev.includes(category)
+        ? prev.filter((c) => c !== category)
+        : [...prev, category]
+    );
+  };
+
+  const getFilesByCategory = (category: FileCategory) => {
+    const filteredFiles = files.filter((file) => file.category === category);
+    console.log(`Files for category ${category}:`, filteredFiles);
+    return filteredFiles;
+  };
+
+  console.log("All files:", files);
+  console.log("Expanded sections:", expandedSections);
+
+  const handleAddFile = (category: FileCategory) => {
+    onAddFile(category);
+  };
+
   return (
     <div className={styles.sidebar}>
-      <div className={styles.header}>
-        <button className={styles.addButton} onClick={onAddFile}>
-          + New File
-        </button>
-      </div>
-      <Droppable droppableId="SIDEBAR">
-        {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className={styles.fileList}
-          >
-            {files.map((file, index) => (
-              <Draggable key={file.id} draggableId={file.id} index={index}>
-                {(provided, snapshot) => (
-                  <FileItem
-                    id={file.id}
-                    name={file.name}
-                    isActive={file.id === activeFileId}
-                    provided={provided}
-                    snapshot={snapshot}
-                    onClick={() => onFileSelect(file.id)}
-                    onRename={onRenameFile}
-                    onDelete={onDeleteFile}
-                  />
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
+      <div className={styles.serviceName}>サービス名</div>
+
+      <SidebarSection
+        title="キャラクター設定"
+        category="character"
+        files={getFilesByCategory("character")}
+        isExpanded={expandedSections.includes("character")}
+        activeFileId={activeFileId}
+        onToggle={toggleSection}
+        onFileSelect={onFileSelect}
+        onRenameFile={onRenameFile}
+        onDeleteFile={onDeleteFile}
+        onAddFile={handleAddFile}
+      />
+
+      <SidebarSection
+        title="その他設定"
+        category="setting"
+        files={getFilesByCategory("setting")}
+        isExpanded={expandedSections.includes("setting")}
+        activeFileId={activeFileId}
+        onToggle={toggleSection}
+        onFileSelect={onFileSelect}
+        onRenameFile={onRenameFile}
+        onDeleteFile={onDeleteFile}
+        onAddFile={handleAddFile}
+      />
+
+      <SidebarSection
+        title="シナリオ"
+        category="scenario"
+        files={getFilesByCategory("scenario")}
+        isExpanded={expandedSections.includes("scenario")}
+        activeFileId={activeFileId}
+        onToggle={toggleSection}
+        onFileSelect={onFileSelect}
+        onRenameFile={onRenameFile}
+        onDeleteFile={onDeleteFile}
+        onAddFile={handleAddFile}
+      />
+
       <div className={styles.footer}>
         <button className={styles.promptButton} onClick={onEditPrompt}>
           Edit Prompt
