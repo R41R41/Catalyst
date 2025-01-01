@@ -8,12 +8,10 @@ interface BaseFileData {
 
 export const fetchScenarios = async (): Promise<BaseFileData[]> => {
   try {
-    console.log("fetchScenarios");
     const response = await fetch(`${API_URL}/scenarios`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    console.log("response", response);
     return await response.json();
   } catch (error) {
     console.error("Error fetching scenarios:", error);
@@ -63,7 +61,6 @@ export const renameScenario = async (fileId: string, newName: string) => {
 
 // キャラクター関連のAPI
 export const fetchCharacters = async (): Promise<BaseFileData[]> => {
-  console.log("fetchCharacters");
   const response = await fetch(`${API_URL}/characters`);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,7 +81,6 @@ export const createCharacter = async (
 
 // 設定関連のAPI
 export const fetchSettings = async (): Promise<BaseFileData[]> => {
-  console.log("fetchSettings");
   const response = await fetch(`${API_URL}/settings`);
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);

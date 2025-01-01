@@ -42,7 +42,6 @@ const FileItem: React.FC<FileItemProps> = ({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    console.log("Right click detected at:", e.clientX, e.clientY);
     setMenuPosition({ x: e.clientX, y: e.clientY });
     setShowMenu(true);
   };

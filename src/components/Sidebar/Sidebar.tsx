@@ -44,9 +44,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     return filteredFiles;
   };
 
-  console.log("All files:", files);
-  console.log("Expanded sections:", expandedSections);
-
   const handleAddFile = (category: FileCategory) => {
     onAddFile(category);
   };

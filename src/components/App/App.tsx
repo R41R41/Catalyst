@@ -38,11 +38,6 @@ const App: React.FC = () => {
           fetchCharacters(),
           fetchSettings(),
         ]);
-
-        console.log("scenarios", scenarios);
-        console.log("characters", characters);
-        console.log("settings", settings);
-
         // カテゴリープロパティを追加して結合
         const allFiles = [
           ...scenarios.map((s) => ({
@@ -58,9 +53,6 @@ const App: React.FC = () => {
             category: "setting" as FileCategory,
           })),
         ];
-
-        console.log("allFiles", allFiles);
-
         if (allFiles.length > 0) {
           setFiles(allFiles);
           setActiveFileId(allFiles[0].id);

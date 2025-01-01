@@ -22,7 +22,6 @@ const Editor: React.FC<EditorProps> = ({
   const originalContentRef = useRef<string>("");
 
   const insertCompletion = useCallback((completionText: string) => {
-    console.log("insertCompletion", completionText);
     if (editorRef.current) {
       const range = document.createRange();
       range.selectNodeContents(editorRef.current);

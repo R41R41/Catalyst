@@ -29,13 +29,6 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
   onDeleteFile,
   onAddFile,
 }) => {
-  console.log(`SidebarSection ${category}:`, {
-    title,
-    filesCount: files.length,
-    isExpanded,
-    files,
-  });
-
   return (
     <div className={styles.section}>
       <div className={styles.sectionHeader} onClick={() => onToggle(category)}>

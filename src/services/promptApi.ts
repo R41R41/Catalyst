@@ -41,6 +41,5 @@ export const updatePrompt = async (
     },
     body: JSON.stringify({ content }),
   });
-  console.log("updatePrompt", response);
   return response.json();
 };
