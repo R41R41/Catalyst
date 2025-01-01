@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { getCompletion } from "../../services/openai";
+import { getCompletion, findRelatedContents } from "../../services/openai";
 import { Prompt } from "../../services/promptApi";
-import { FileCategory } from "../../types/File";
+import { FileCategory, FileData } from "../../types/File";
 import styles from "./Editor.module.scss";
 
 interface EditorProps {
@@ -9,6 +9,7 @@ interface EditorProps {
   category: FileCategory;
   onContentChange: (content: string, category: FileCategory) => void;
   systemPrompts: Prompt[];
+  allFiles: FileData[];
 }
 
 const Editor: React.FC<EditorProps> = ({
@@ -16,6 +17,7 @@ const Editor: React.FC<EditorProps> = ({
   category,
   onContentChange,
   systemPrompts,
+  allFiles,
 }) => {
   const [completion, setCompletion] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -80,7 +82,16 @@ const Editor: React.FC<EditorProps> = ({
           if (content) {
             originalContentRef.current = content;
 
-            const result = await getCompletion(content, systemPrompts);
+            const relatedContents = await findRelatedContents(
+              content,
+              allFiles
+            );
+
+            const result = await getCompletion(
+              content,
+              systemPrompts,
+              relatedContents
+            );
 
             if (
               result &&

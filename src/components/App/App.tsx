@@ -226,6 +226,7 @@ const App: React.FC = () => {
               category={activeFile?.category ?? "scenario"}
               onContentChange={handleContentChange}
               systemPrompts={prompts}
+              allFiles={files}
             />
           </>
         )}
