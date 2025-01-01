@@ -1,0 +1,127 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  position: relative;
+  background: #1e1e1e;
+  border-radius: 8px;
+  width: 90%;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  color: #fff;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1;
+
+  &:hover {
+    color: #ccc;
+  }
+}
+
+.container {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 250px;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+  background-color: #252525;
+}
+
+.promptListItem {
+  padding: 12px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+
+  &:hover {
+    background-color: #2d2d2d;
+  }
+
+  &.active {
+    background-color: #3d3d3d;
+  }
+}
+
+.editor {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+
+  textarea {
+    flex: 1;
+    width: calc(100% - 20px);
+    padding: 8px;
+    font-size: 14px;
+    border: none;
+    resize: none;
+    background-color: #1e1e1e;
+    color: #fff;
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.saveButton {
+  padding: 8px 24px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: #106ebe;
+  }
+
+  &:active {
+    background-color: #005a9e;
+  }
+
+  &.disabled {
+    background-color: #2b2b2b;
+    color: #666;
+    cursor: default;
+
+    &:hover {
+      background-color: #2b2b2b;
+    }
+
+    &:active {
+      background-color: #2b2b2b;
+    }
+  }
+}

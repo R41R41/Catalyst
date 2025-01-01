@@ -12,6 +12,7 @@ interface SidebarProps {
   onRenameFile: (fileId: string, newName: string) => void;
   onDeleteFile: (fileId: string) => void;
   setFiles: (files: FileData[]) => void;
+  onEditPrompt: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -22,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onRenameFile,
   onDeleteFile,
   setFiles,
+  onEditPrompt,
 }) => {
   return (
     <div className={styles.sidebar}>
@@ -57,6 +59,11 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
       </Droppable>
+      <div className={styles.footer}>
+        <button className={styles.promptButton} onClick={onEditPrompt}>
+          Edit Prompt
+        </button>
+      </div>
     </div>
   );
 };

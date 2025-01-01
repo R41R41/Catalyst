@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Editor from "../Editor/Editor";
 import Sidebar from "../Sidebar/Sidebar";
 import styles from "./App.module.scss";
@@ -11,7 +11,8 @@ import {
   renameScenario,
 } from "../../services/api";
 import { FileData } from "../../types/File";
-import { fetchPrompts, Prompt } from "../../services/promptApi";
+import { fetchPrompts, updatePrompt, Prompt } from "../../services/promptApi";
+import PromptModal from "../PromptModal/PromptModal";
 
 const App: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);
@@ -19,6 +20,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
 
   useEffect(() => {
     const loadScenarios = async () => {
@@ -49,17 +51,20 @@ const App: React.FC = () => {
     loadScenarios();
   }, []);
 
-  useEffect(() => {
-    const loadPrompts = async () => {
-      try {
-        const loadedPrompts = await fetchPrompts();
-        setPrompts(loadedPrompts);
-      } catch (error) {
-        console.error("Failed to load prompts:", error);
-      }
-    };
-    loadPrompts();
+  const loadPrompts = useCallback(async () => {
+    try {
+      const loadedPrompts = await fetchPrompts();
+      setPrompts(loadedPrompts);
+    } catch (error) {
+      console.error("Failed to load prompts:", error);
+    }
   }, []);
+
+  useEffect(() => {
+    loadPrompts();
+  }, [loadPrompts]);
+
+  console.log(prompts);
 
   const handleFileSelect = (fileId: string) => {
     setActiveFileId(fileId);
@@ -108,6 +113,25 @@ const App: React.FC = () => {
     );
   };
 
+  const handleEditPrompt = () => {
+    setIsPromptModalOpen(true);
+  };
+
+  const handleSavePrompts = async (newPrompts: Prompt[]) => {
+    try {
+      const updatedPrompt = newPrompts.find(
+        (newPrompt, index) => newPrompt.content !== prompts[index].content
+      );
+
+      if (updatedPrompt) {
+        await updatePrompt(updatedPrompt.id, updatedPrompt.content);
+        await loadPrompts();
+      }
+    } catch (error) {
+      console.error("Failed to save prompt:", error);
+    }
+  };
+
   const activeFile = files.find((file) => file.id === activeFileId);
 
   return (
@@ -127,6 +151,7 @@ const App: React.FC = () => {
               onRenameFile={handleRenameFile}
               onDeleteFile={handleDeleteFile}
               setFiles={setFiles}
+              onEditPrompt={handleEditPrompt}
             />
             <Editor
               content={activeFile?.content ?? ""}
@@ -135,6 +160,12 @@ const App: React.FC = () => {
             />
           </>
         )}
+        <PromptModal
+          isOpen={isPromptModalOpen}
+          onClose={() => setIsPromptModalOpen(false)}
+          prompts={prompts}
+          onSave={handleSavePrompts}
+        />
       </div>
     </DragDropContext>
   );
