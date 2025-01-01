@@ -1,4 +1,4 @@
-# NarrativeStudio
+# Catalyst
 
 物語執筆を支援する web アプリケーション
 

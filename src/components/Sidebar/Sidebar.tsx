@@ -53,7 +53,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className={styles.sidebar}>
-      <div className={styles.serviceName}>サービス名</div>
+      <div className={styles.serviceName}>Catalyst</div>
 
       <SidebarSection
         title="キャラクター設定"
