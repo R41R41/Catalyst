@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const fileSchema = new mongoose.Schema(
+const settingSchema = new mongoose.Schema(
   {
     id: String,
     name: String,
@@ -9,4 +9,4 @@ const fileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const File = mongoose.model("File", fileSchema);
+export const Setting = mongoose.model("Setting", settingSchema);

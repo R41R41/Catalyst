@@ -1,13 +1,19 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { getCompletion } from "../../services/openai";
+import { Prompt } from "../../services/promptApi";
 import styles from "./Editor.module.scss";
 
 interface EditorProps {
   content: string;
   onContentChange: (content: string) => void;
+  systemPrompts: Prompt[];
 }
 
-const Editor: React.FC<EditorProps> = ({ content, onContentChange }) => {
+const Editor: React.FC<EditorProps> = ({
+  content,
+  onContentChange,
+  systemPrompts,
+}) => {
   const [completion, setCompletion] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
@@ -52,7 +58,7 @@ const Editor: React.FC<EditorProps> = ({ content, onContentChange }) => {
           if (content) {
             originalContentRef.current = content;
 
-            const result = await getCompletion(content);
+            const result = await getCompletion(content, systemPrompts);
 
             if (
               result &&
@@ -96,7 +102,7 @@ const Editor: React.FC<EditorProps> = ({ content, onContentChange }) => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isCompleted, insertCompletion, completion]);
+  }, [isCompleted, insertCompletion, completion, systemPrompts]);
 
   return (
     <div className={styles.editor}>

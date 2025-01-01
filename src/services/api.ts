@@ -2,26 +2,21 @@ import { FileData } from "../types/File";
 
 const API_URL = `http://${process.env.REACT_APP_SERVER_IP_ADDRESS}:5000/api`;
 
-export const fetchFiles = async () => {
+export const fetchScenarios = async () => {
   try {
-    console.log("Fetching from:", `${API_URL}/files`);
-    const response = await fetch(`${API_URL}/files`);
-
+    const response = await fetch(`${API_URL}/scenarios`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
-    const data = await response.json();
-    console.log("API response:", data);
-    return data;
+    return await response.json();
   } catch (error) {
-    console.error("Error fetching files:", error);
+    console.error("Error fetching scenarios:", error);
     throw error;
   }
 };
 
-export const updateFile = async (fileId: string, content: string) => {
-  await fetch(`${API_URL}/files/${fileId}`, {
+export const updateScenario = async (fileId: string, content: string) => {
+  await fetch(`${API_URL}/scenarios/${fileId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -30,8 +25,8 @@ export const updateFile = async (fileId: string, content: string) => {
   });
 };
 
-export const createFile = async (file: FileData) => {
-  const response = await fetch(`${API_URL}/files`, {
+export const createScenario = async (file: FileData) => {
+  const response = await fetch(`${API_URL}/scenarios`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -41,18 +36,19 @@ export const createFile = async (file: FileData) => {
   return response.json();
 };
 
-export const deleteFile = async (fileId: string) => {
-  await fetch(`${API_URL}/files/${fileId}`, {
+export const deleteScenario = async (fileId: string) => {
+  await fetch(`${API_URL}/scenarios/${fileId}`, {
     method: "DELETE",
   });
 };
 
-export const renameFile = async (fileId: string, newName: string) => {
-  await fetch(`${API_URL}/files/${fileId}`, {
-    method: "PATCH",
+export const renameScenario = async (fileId: string, newName: string) => {
+  const response = await fetch(`${API_URL}/scenarios/${fileId}`, {
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ name: newName }),
   });
+  return response.json();
 };

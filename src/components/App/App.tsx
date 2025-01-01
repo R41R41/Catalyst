@@ -1,54 +1,64 @@
 import React, { useState, useEffect } from "react";
 import Editor from "../Editor/Editor";
 import Sidebar from "../Sidebar/Sidebar";
-import { FileData } from "../../types/File";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import {
-  fetchFiles,
-  updateFile,
-  createFile,
-  deleteFile,
-  renameFile,
+  fetchScenarios,
+  updateScenario,
+  createScenario,
+  deleteScenario,
+  renameScenario,
 } from "../../services/api";
-
-const initialFiles: FileData[] = [
-  { id: "file-1", name: "シナリオ", content: "" },
-  { id: "file-2", name: "設定", content: "" },
-];
+import { FileData } from "../../types/File";
+import { fetchPrompts, Prompt } from "../../services/promptApi";
 
 const App: React.FC = () => {
-  const [files, setFiles] = useState<FileData[]>(initialFiles);
-  const [activeFileId, setActiveFileId] = useState(files[0].id);
+  const [files, setFiles] = useState<FileData[]>([]);
+  const [activeFileId, setActiveFileId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
 
   useEffect(() => {
-    const loadFiles = async () => {
+    const loadScenarios = async () => {
       try {
-        console.log("Fetching files...");
-        const loadedFiles = await fetchFiles();
-        console.log("Received files:", loadedFiles);
-
-        if (loadedFiles && loadedFiles.length > 0) {
-          console.log("Using loaded files");
-          setFiles(loadedFiles);
-          setActiveFileId(loadedFiles[0].id);
+        setIsLoading(true);
+        const scenarios = await fetchScenarios();
+        if (scenarios && scenarios.length > 0) {
+          setFiles(scenarios);
+          setActiveFileId(scenarios[0].id);
         } else {
-          console.log("Using initial files");
-          setFiles(initialFiles);
-          setActiveFileId(initialFiles[0].id);
+          const defaultScenario = {
+            id: "scenario-1",
+            name: "新規シナリオ",
+            content: "",
+          };
+          const savedScenario = await createScenario(defaultScenario);
+          setFiles([savedScenario]);
+          setActiveFileId(savedScenario.id);
         }
       } catch (error) {
-        console.error("Failed to load files:", error);
-        setError("ファイルの読み込みに失敗しました");
-        setFiles(initialFiles);
+        console.error("Failed to load scenarios:", error);
+        setError("シナリオの読み込みに失敗しました");
       } finally {
-        console.log("Setting isLoading to false");
         setIsLoading(false);
       }
     };
-    loadFiles();
+
+    loadScenarios();
+  }, []);
+
+  useEffect(() => {
+    const loadPrompts = async () => {
+      try {
+        const loadedPrompts = await fetchPrompts();
+        setPrompts(loadedPrompts);
+      } catch (error) {
+        console.error("Failed to load prompts:", error);
+      }
+    };
+    loadPrompts();
   }, []);
 
   const handleFileSelect = (fileId: string) => {
@@ -71,26 +81,26 @@ const App: React.FC = () => {
         file.id === activeFileId ? { ...file, content } : file
       )
     );
-    await updateFile(activeFileId, content);
+    await updateScenario(activeFileId, content);
   };
 
   const handleAddFile = async () => {
     const newFile: FileData = {
       id: `file-${files.length + 1}`,
-      name: `new_file_${files.length + 1}.ts`,
+      name: `新規シナリオ_${files.length + 1}`,
       content: "",
     };
-    const savedFile = await createFile(newFile);
+    const savedFile = await createScenario(newFile);
     setFiles([...files, savedFile]);
   };
 
   const handleDeleteFile = async (fileId: string) => {
-    await deleteFile(fileId);
+    await deleteScenario(fileId);
     setFiles(files.filter((file) => file.id !== fileId));
   };
 
   const handleRenameFile = async (fileId: string, newName: string) => {
-    await renameFile(fileId, newName);
+    await renameScenario(fileId, newName);
     setFiles(
       files.map((file) =>
         file.id === fileId ? { ...file, name: newName } : file
@@ -121,6 +131,7 @@ const App: React.FC = () => {
             <Editor
               content={activeFile?.content ?? ""}
               onContentChange={handleContentChange}
+              systemPrompts={prompts}
             />
           </>
         )}

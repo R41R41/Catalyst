@@ -1,17 +1,30 @@
 import OpenAI from "openai";
+import { Prompt } from "./promptApi";
 
 const openai = new OpenAI({
   apiKey: process.env.REACT_APP_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true, // ローカル開発用
 });
 
-export const getCompletion = async (prompt: string) => {
+export const getCompletion = async (
+  prompt: string,
+  systemPrompts: Prompt[]
+) => {
   try {
+    // システムプロンプトを結合
+    const systemContent = systemPrompts
+      .map((prompt) => prompt.content)
+      .join("\n\n");
+
     const completion = await openai.chat.completions.create({
       messages: [
         {
+          role: "system",
+          content: systemContent,
+        },
+        {
           role: "user",
-          content: `以下の続きを予測して出力してください: ${prompt}`,
+          content: prompt,
         },
       ],
       model: "gpt-4o-mini",
