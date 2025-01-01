@@ -8,8 +8,12 @@ interface SidebarProps {
   activeFileId: string;
   onFileSelect: (fileId: string) => void;
   onAddFile: (category: FileCategory) => void;
-  onRenameFile: (fileId: string, newName: string) => void;
-  onDeleteFile: (fileId: string) => void;
+  onRenameFile: (
+    fileId: string,
+    newName: string,
+    category: FileCategory
+  ) => void;
+  onDeleteFile: (fileId: string, category: FileCategory) => void;
   setFiles: (files: FileData[]) => void;
   onEditPrompt: () => void;
 }

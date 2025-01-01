@@ -1,16 +1,19 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { getCompletion } from "../../services/openai";
 import { Prompt } from "../../services/promptApi";
+import { FileCategory } from "../../types/File";
 import styles from "./Editor.module.scss";
 
 interface EditorProps {
   content: string;
-  onContentChange: (content: string) => void;
+  category: FileCategory;
+  onContentChange: (content: string, category: FileCategory) => void;
   systemPrompts: Prompt[];
 }
 
 const Editor: React.FC<EditorProps> = ({
   content,
+  category,
   onContentChange,
   systemPrompts,
 }) => {
@@ -62,7 +65,7 @@ const Editor: React.FC<EditorProps> = ({
 
   const handleInput = () => {
     const newContent = editorRef.current?.textContent || "";
-    onContentChange(newContent);
+    onContentChange(newContent, category);
   };
 
   useEffect(() => {

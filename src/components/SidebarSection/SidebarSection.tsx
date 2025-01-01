@@ -12,8 +12,12 @@ interface SidebarSectionProps {
   activeFileId: string;
   onToggle: (category: FileCategory) => void;
   onFileSelect: (fileId: string) => void;
-  onRenameFile: (fileId: string, newName: string) => void;
-  onDeleteFile: (fileId: string) => void;
+  onRenameFile: (
+    fileId: string,
+    newName: string,
+    category: FileCategory
+  ) => void;
+  onDeleteFile: (fileId: string, category: FileCategory) => void;
   onAddFile: (category: FileCategory) => void;
 }
 
@@ -45,6 +49,7 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
                     <FileItem
                       id={file.id}
                       name={file.name}
+                      category={category}
                       isActive={file.id === activeFileId}
                       provided={provided}
                       snapshot={snapshot}

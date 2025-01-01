@@ -4,15 +4,21 @@ import Sidebar from "../Sidebar/Sidebar";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import {
-  fetchScenarios,
-  updateScenario,
-  createScenario,
-  deleteScenario,
-  renameScenario,
-  fetchCharacters,
-  fetchSettings,
   createCharacter,
+  createScenario,
   createSetting,
+  deleteCharacter,
+  deleteScenario,
+  deleteSetting,
+  fetchCharacters,
+  fetchScenarios,
+  fetchSettings,
+  renameCharacter,
+  renameScenario,
+  renameSetting,
+  updateCharacter,
+  updateScenario,
+  updateSetting,
 } from "../../services/api";
 import { FileData, FileCategory } from "../../types/File";
 import { fetchPrompts, updatePrompt, Prompt } from "../../services/promptApi";
@@ -95,13 +101,22 @@ const App: React.FC = () => {
     setFiles(items);
   };
 
-  const handleContentChange = async (content: string) => {
+  const handleContentChange = async (
+    content: string,
+    category: FileCategory
+  ) => {
     setFiles(
       files.map((file) =>
         file.id === activeFileId ? { ...file, content } : file
       )
     );
-    await updateScenario(activeFileId, content);
+    if (category === "scenario") {
+      await updateScenario(activeFileId, content);
+    } else if (category === "character") {
+      await updateCharacter(activeFileId, content);
+    } else if (category === "setting") {
+      await updateSetting(activeFileId, content);
+    }
   };
 
   const handleAddFile = async (category: FileCategory) => {
@@ -113,17 +128,41 @@ const App: React.FC = () => {
       category: category,
       content: "",
     };
-    const savedFile = await createScenario(newFile);
-    setFiles([...files, { ...savedFile, category }]);
+    if (category === "scenario") {
+      const savedFile = await createScenario(newFile);
+      setFiles([...files, { ...savedFile, category }]);
+    } else if (category === "character") {
+      const savedFile = await createCharacter(newFile);
+      setFiles([...files, { ...savedFile, category }]);
+    } else if (category === "setting") {
+      const savedFile = await createSetting(newFile);
+      setFiles([...files, { ...savedFile, category }]);
+    }
   };
 
-  const handleDeleteFile = async (fileId: string) => {
-    await deleteScenario(fileId);
+  const handleDeleteFile = async (fileId: string, category: FileCategory) => {
+    if (category === "scenario") {
+      await deleteScenario(fileId);
+    } else if (category === "character") {
+      await deleteCharacter(fileId);
+    } else if (category === "setting") {
+      await deleteSetting(fileId);
+    }
     setFiles(files.filter((file) => file.id !== fileId));
   };
 
-  const handleRenameFile = async (fileId: string, newName: string) => {
-    await renameScenario(fileId, newName);
+  const handleRenameFile = async (
+    fileId: string,
+    newName: string,
+    category: FileCategory
+  ) => {
+    if (category === "scenario") {
+      await renameScenario(fileId, newName);
+    } else if (category === "character") {
+      await renameCharacter(fileId, newName);
+    } else if (category === "setting") {
+      await renameSetting(fileId, newName);
+    }
     setFiles(
       files.map((file) =>
         file.id === fileId ? { ...file, name: newName } : file
@@ -184,6 +223,7 @@ const App: React.FC = () => {
             />
             <Editor
               content={activeFile?.content ?? ""}
+              category={activeFile?.category ?? "scenario"}
               onContentChange={handleContentChange}
               systemPrompts={prompts}
             />

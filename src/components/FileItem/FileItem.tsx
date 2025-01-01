@@ -1,21 +1,24 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd";
+import { FileCategory } from "../../types/File";
 import styles from "./FileItem.module.scss";
 
 interface FileItemProps {
   id: string;
   name: string;
+  category: FileCategory;
   isActive: boolean;
   provided: DraggableProvided;
   snapshot: DraggableStateSnapshot;
   onClick: () => void;
-  onRename: (fileId: string, newName: string) => void;
-  onDelete: (fileId: string) => void;
+  onRename: (fileId: string, newName: string, category: FileCategory) => void;
+  onDelete: (fileId: string, category: FileCategory) => void;
 }
 
 const FileItem: React.FC<FileItemProps> = ({
   id,
   name,
+  category,
   isActive,
   provided,
   snapshot,
@@ -52,12 +55,12 @@ const FileItem: React.FC<FileItemProps> = ({
   };
 
   const handleDelete = () => {
-    onDelete(id);
+    onDelete(id, category);
     setShowMenu(false);
   };
 
   const handleNameSubmit = () => {
-    onRename(id, editName);
+    onRename(id, editName, category);
     setIsEditing(false);
   };
 
