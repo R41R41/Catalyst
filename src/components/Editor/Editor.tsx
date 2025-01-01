@@ -35,9 +35,29 @@ const Editor: React.FC<EditorProps> = ({
     }
   }, []);
 
+  const saveCaretPosition = () => {
+    const selection = window.getSelection();
+    if (selection && selection.rangeCount > 0) {
+      return selection.getRangeAt(0);
+    }
+    return null;
+  };
+
+  const restoreCaretPosition = (range: Range | null) => {
+    if (range && editorRef.current) {
+      const selection = window.getSelection();
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+  };
+
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && editorRef.current.textContent !== content) {
+      const savedRange = saveCaretPosition();
       editorRef.current.textContent = content;
+      restoreCaretPosition(savedRange);
     }
   }, [content]);
 
