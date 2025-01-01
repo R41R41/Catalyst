@@ -38,7 +38,7 @@ export const getCompletion = async (
 
     const completion = await openai.chat.completions.create({
       messages: messages as ChatCompletionMessageParam[],
-      model: "gpt-4-turbo-preview",
+      model: "gpt-4o-mini",
       max_tokens: 100,
     });
     return completion.choices[0].message.content;
