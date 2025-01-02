@@ -46,7 +46,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   const getFilesByCategory = (category: FileCategory) => {
     const filteredFiles = files.filter((file) => file.category === category);
-    console.log(`Files for category ${category}:`, filteredFiles);
     return filteredFiles;
   };
 

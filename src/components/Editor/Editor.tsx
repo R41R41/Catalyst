@@ -23,12 +23,16 @@ const Editor: React.FC<EditorProps> = ({
   onSave,
   isDirty,
 }) => {
+  const MAX_HISTORY = 100;
   const [completion, setCompletion] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
   const editorRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const completionRef = useRef<HTMLSpanElement | null>(null);
   const originalContentRef = useRef<string>("");
+  const historyRef = useRef<string[]>([]);
+  const historyIndexRef = useRef<number>(-1);
+  const tempContentRef = useRef<string>("");
 
   const insertCompletion = useCallback(async (completionText: string) => {
     if (editorRef.current) {
@@ -72,6 +76,7 @@ const Editor: React.FC<EditorProps> = ({
   const handleInput = useCallback(async () => {
     const newContent = editorRef.current?.textContent || "";
     await onContentChange(newContent, category);
+    tempContentRef.current = newContent;
 
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -120,6 +125,45 @@ const Editor: React.FC<EditorProps> = ({
         onSave();
       }
 
+      if (e.key === "Enter") {
+        const newHistory = [
+          ...historyRef.current.slice(0, historyIndexRef.current + 1),
+          tempContentRef.current,
+        ];
+        if (newHistory.length > MAX_HISTORY) {
+          newHistory.shift();
+        }
+        historyRef.current = newHistory;
+        historyIndexRef.current = Math.min(
+          historyRef.current.length - 1,
+          MAX_HISTORY - 1
+        );
+      }
+
+      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "z") {
+        e.preventDefault();
+        if (historyIndexRef.current > 0) {
+          historyIndexRef.current--;
+          const previousContent = historyRef.current[historyIndexRef.current];
+          if (editorRef.current && previousContent !== undefined) {
+            editorRef.current.textContent = previousContent;
+            await onContentChange(previousContent, category);
+          }
+        }
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") {
+        e.preventDefault();
+        if (historyIndexRef.current < historyRef.current.length - 1) {
+          historyIndexRef.current++;
+          const nextContent = historyRef.current[historyIndexRef.current];
+          if (editorRef.current && nextContent !== undefined) {
+            editorRef.current.textContent = nextContent;
+            await onContentChange(nextContent, category);
+          }
+        }
+      }
+
       if (isCompleted) {
         if (e.key === "Tab") {
           e.preventDefault();
@@ -127,6 +171,19 @@ const Editor: React.FC<EditorProps> = ({
             completionRef.current.style.color = "white";
             const newContent = editorRef.current?.textContent || "";
             await onContentChange(newContent, category);
+
+            const newHistory = [
+              ...historyRef.current.slice(0, historyIndexRef.current + 1),
+              newContent,
+            ];
+            if (newHistory.length > MAX_HISTORY) {
+              newHistory.shift();
+            }
+            historyRef.current = newHistory;
+            historyIndexRef.current = Math.min(
+              historyRef.current.length - 1,
+              MAX_HISTORY - 1
+            );
           }
         } else {
           if (completionRef.current) {
