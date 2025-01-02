@@ -9,6 +9,7 @@ const openai = new OpenAI({
 });
 
 export const getCompletion = async (
+  currentFileName: string,
   prompt: string,
   systemPrompt: Prompt,
   relatedContents: string[]
@@ -30,7 +31,7 @@ export const getCompletion = async (
       })),
       {
         role: "user",
-        content: prompt,
+        content: currentFileName + "\n" + prompt,
       },
     ];
 
@@ -67,20 +68,27 @@ const cosineSimilarity = (vec1: number[], vec2: number[]): number => {
 };
 
 export const findRelatedContents = async (
+  currentFileName: string,
   currentContent: string,
   allFiles: FileData[]
 ): Promise<string[]> => {
-  const currentEmbedding = await getEmbedding(currentContent);
+  const currentEmbedding = await getEmbedding(
+    currentFileName + "\n" + currentContent
+  );
   if (!currentEmbedding) return [];
 
   const similarities = await Promise.all(
     allFiles
-      .filter((file) => file.content !== currentContent)
+      .filter((file) => file.name !== currentFileName)
       .map(async (file) => {
-        const embedding = await getEmbedding(file.content);
-        if (!embedding) return { content: file.content, similarity: 0 };
+        const embedding = await getEmbedding(file.name + "\n" + file.content);
+        if (!embedding)
+          return {
+            content: file.name + "\n" + file.content,
+            similarity: 0,
+          };
         return {
-          content: file.content,
+          content: file.name + "\n" + file.content,
           similarity: cosineSimilarity(currentEmbedding, embedding),
         };
       })

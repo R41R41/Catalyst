@@ -238,6 +238,7 @@ const App: React.FC = () => {
             />
             <Editor
               content={activeFile?.content ?? ""}
+              currentFileName={activeFile?.name ?? ""}
               category={activeFile?.category ?? "scenario"}
               onContentChange={handleContentChange}
               systemPrompts={prompts}

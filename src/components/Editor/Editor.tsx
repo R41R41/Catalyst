@@ -10,6 +10,7 @@ interface EditorProps {
   onContentChange: (content: string, category: FileCategory) => void;
   systemPrompts: Prompt[];
   allFiles: FileData[];
+  currentFileName: string;
   onSave: () => void;
   isDirty: boolean;
 }
@@ -20,6 +21,7 @@ const Editor: React.FC<EditorProps> = ({
   onContentChange,
   systemPrompts,
   allFiles,
+  currentFileName,
   onSave,
   isDirty,
 }) => {
@@ -88,7 +90,11 @@ const Editor: React.FC<EditorProps> = ({
         if (content) {
           originalContentRef.current = content;
 
-          const relatedContents = await findRelatedContents(content, allFiles);
+          const relatedContents = await findRelatedContents(
+            currentFileName,
+            content,
+            allFiles
+          );
           const systemPrompt = systemPrompts.find(
             (prompt) => prompt.name === `predict_${category}`
           );
@@ -100,6 +106,7 @@ const Editor: React.FC<EditorProps> = ({
 
           console.log("補完します");
           const result = await getCompletion(
+            currentFileName,
             content,
             systemPrompt,
             relatedContents
