@@ -32,6 +32,7 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadAllFiles = async () => {
@@ -105,6 +106,7 @@ const App: React.FC = () => {
     content: string,
     category: FileCategory
   ) => {
+    setDirtyFiles((prev) => new Set(prev).add(activeFileId));
     setFiles(
       files.map((file) =>
         file.id === activeFileId ? { ...file, content } : file
@@ -189,6 +191,18 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSave = async () => {
+    const file = files.find((f) => f.id === activeFileId);
+    if (!file) return;
+
+    await handleContentChange(file.content, file.category);
+    setDirtyFiles((prev) => {
+      const next = new Set(prev);
+      next.delete(activeFileId);
+      return next;
+    });
+  };
+
   const activeFile = files.find((file) => file.id === activeFileId);
 
   const getCategoryName = (category: FileCategory): string => {
@@ -220,6 +234,7 @@ const App: React.FC = () => {
               onDeleteFile={handleDeleteFile}
               setFiles={setFiles}
               onEditPrompt={handleEditPrompt}
+              dirtyFiles={dirtyFiles}
             />
             <Editor
               content={activeFile?.content ?? ""}
@@ -227,6 +242,8 @@ const App: React.FC = () => {
               onContentChange={handleContentChange}
               systemPrompts={prompts}
               allFiles={files}
+              onSave={handleSave}
+              isDirty={dirtyFiles.has(activeFileId)}
             />
           </>
         )}

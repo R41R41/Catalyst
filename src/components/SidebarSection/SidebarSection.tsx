@@ -19,6 +19,7 @@ interface SidebarSectionProps {
   ) => void;
   onDeleteFile: (fileId: string, category: FileCategory) => void;
   onAddFile: (category: FileCategory) => void;
+  dirtyFiles: Set<string>;
 }
 
 const SidebarSection: React.FC<SidebarSectionProps> = ({
@@ -32,6 +33,7 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
   onRenameFile,
   onDeleteFile,
   onAddFile,
+  dirtyFiles,
 }) => {
   return (
     <div className={styles.section}>
@@ -56,6 +58,7 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
                       onClick={() => onFileSelect(file.id)}
                       onRename={onRenameFile}
                       onDelete={onDeleteFile}
+                      isDirty={dirtyFiles.has(file.id)}
                     />
                   )}
                 </Draggable>

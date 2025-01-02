@@ -10,14 +10,12 @@ const openai = new OpenAI({
 
 export const getCompletion = async (
   prompt: string,
-  systemPrompts: Prompt[],
+  systemPrompt: Prompt,
   relatedContents: string[]
 ) => {
   try {
     // システムプロンプトを結合
-    const systemContent = systemPrompts
-      .map((prompt) => prompt.content)
-      .join("\n\n");
+    const systemContent = systemPrompt.content;
 
     // 関連コンテンツを含めたメッセージを作成
     const messages = [

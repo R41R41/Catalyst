@@ -10,6 +10,8 @@ interface EditorProps {
   onContentChange: (content: string, category: FileCategory) => void;
   systemPrompts: Prompt[];
   allFiles: FileData[];
+  onSave: () => void;
+  isDirty: boolean;
 }
 
 const Editor: React.FC<EditorProps> = ({
@@ -18,6 +20,8 @@ const Editor: React.FC<EditorProps> = ({
   onContentChange,
   systemPrompts,
   allFiles,
+  onSave,
+  isDirty,
 }) => {
   const [completion, setCompletion] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
@@ -26,7 +30,7 @@ const Editor: React.FC<EditorProps> = ({
   const completionRef = useRef<HTMLSpanElement | null>(null);
   const originalContentRef = useRef<string>("");
 
-  const insertCompletion = useCallback((completionText: string) => {
+  const insertCompletion = useCallback(async (completionText: string) => {
     if (editorRef.current) {
       const range = document.createRange();
       range.selectNodeContents(editorRef.current);
@@ -65,53 +69,64 @@ const Editor: React.FC<EditorProps> = ({
     }
   }, [content]);
 
-  const handleInput = () => {
+  const handleInput = useCallback(async () => {
     const newContent = editorRef.current?.textContent || "";
-    onContentChange(newContent, category);
-  };
+    await onContentChange(newContent, category);
 
-  useEffect(() => {
-    const handleInput = () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-      timeoutRef.current = setTimeout(async () => {
-        if (editorRef.current) {
-          const content = editorRef.current.textContent || "";
-          if (content) {
-            originalContentRef.current = content;
+    timeoutRef.current = setTimeout(async () => {
+      if (editorRef.current) {
+        const content = editorRef.current.textContent || "";
+        if (content) {
+          originalContentRef.current = content;
 
-            const relatedContents = await findRelatedContents(
-              content,
-              allFiles
-            );
+          const relatedContents = await findRelatedContents(content, allFiles);
+          const systemPrompt = systemPrompts.find(
+            (prompt) => prompt.name === `predict_${category}`
+          );
 
-            const result = await getCompletion(
-              content,
-              systemPrompts,
-              relatedContents
-            );
+          if (!systemPrompt) {
+            console.error("System prompt not found");
+            return;
+          }
 
-            if (
-              result &&
-              editorRef.current?.textContent === originalContentRef.current
-            ) {
-              setCompletion(result);
-              insertCompletion(result);
-              setIsCompleted(true);
-            }
+          console.log("補完します");
+          const result = await getCompletion(
+            content,
+            systemPrompt,
+            relatedContents
+          );
+
+          if (
+            result &&
+            editorRef.current?.textContent === originalContentRef.current
+          ) {
+            setCompletion(result);
+            insertCompletion(result);
+            setIsCompleted(true);
           }
         }
-      }, 1000);
-    };
+      }
+    }, 1000);
+  }, [category, onContentChange, systemPrompts, allFiles, insertCompletion]);
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        onSave();
+      }
+
       if (isCompleted) {
         if (e.key === "Tab") {
           e.preventDefault();
           if (completionRef.current) {
             completionRef.current.style.color = "white";
+            const newContent = editorRef.current?.textContent || "";
+            await onContentChange(newContent, category);
           }
         } else {
           if (completionRef.current) {
@@ -125,17 +140,24 @@ const Editor: React.FC<EditorProps> = ({
     };
 
     const editor = editorRef.current;
-    editor?.addEventListener("input", handleInput);
     editor?.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      editor?.removeEventListener("input", handleInput);
       editor?.removeEventListener("keydown", handleKeyDown);
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [isCompleted, insertCompletion, completion, systemPrompts]);
+  }, [
+    isCompleted,
+    insertCompletion,
+    completion,
+    systemPrompts,
+    onSave,
+    category,
+    onContentChange,
+    allFiles,
+  ]);
 
   return (
     <div className={styles.editor}>

@@ -16,6 +16,7 @@ interface SidebarProps {
   onDeleteFile: (fileId: string, category: FileCategory) => void;
   setFiles: (files: FileData[]) => void;
   onEditPrompt: () => void;
+  dirtyFiles: Set<string>;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -27,6 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onDeleteFile,
   setFiles,
   onEditPrompt,
+  dirtyFiles,
 }) => {
   const [expandedSections, setExpandedSections] = useState<FileCategory[]>([
     "character",
@@ -67,6 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         onRenameFile={onRenameFile}
         onDeleteFile={onDeleteFile}
         onAddFile={handleAddFile}
+        dirtyFiles={dirtyFiles}
       />
 
       <SidebarSection
@@ -80,6 +83,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         onRenameFile={onRenameFile}
         onDeleteFile={onDeleteFile}
         onAddFile={handleAddFile}
+        dirtyFiles={dirtyFiles}
       />
 
       <SidebarSection
@@ -93,6 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         onRenameFile={onRenameFile}
         onDeleteFile={onDeleteFile}
         onAddFile={handleAddFile}
+        dirtyFiles={dirtyFiles}
       />
 
       <div className={styles.footer}>

@@ -13,6 +13,7 @@ interface FileItemProps {
   onClick: () => void;
   onRename: (fileId: string, newName: string, category: FileCategory) => void;
   onDelete: (fileId: string, category: FileCategory) => void;
+  isDirty: boolean;
 }
 
 const FileItem: React.FC<FileItemProps> = ({
@@ -25,6 +26,7 @@ const FileItem: React.FC<FileItemProps> = ({
   onClick,
   onRename,
   onDelete,
+  isDirty,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -74,6 +76,10 @@ const FileItem: React.FC<FileItemProps> = ({
       }`}
       onClick={onClick}
       onContextMenu={handleContextMenu}
+      style={{
+        ...provided.draggableProps.style,
+        color: isDirty ? "#ffeb3b" : "white",
+      }}
     >
       {isEditing ? (
         <input
