@@ -8,6 +8,7 @@
   padding: 4px 0;
   z-index: 1000;
   box-shadow: 0 2px 5px $color-shadow;
+  backdrop-filter: blur(8px);
 
   button {
     display: block;
@@ -22,28 +23,5 @@
     &:hover {
       background-color: $color-background-hover;
     }
-  }
-}
-
-.file {
-  font-size: 10px;
-  position: relative;
-  padding: 8px 16px 8px 16px;
-  cursor: pointer;
-  color: $color-text-primary;
-  height: 16px;
-
-  &:hover {
-    background-color: $color-background-hover;
-  }
-
-  &.active {
-    background-color: $color-background-active;
-  }
-
-  &.dragging {
-    background-color: $color-background-dragging;
-    opacity: 0.8;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }

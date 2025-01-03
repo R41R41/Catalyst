@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd";
 import { FileCategory } from "@/types/File";
+import { ContextMenu } from "@/components/common/ContextMenu";
 import styles from "./FileItem.module.scss";
 
 interface FileItemProps {
@@ -31,19 +32,7 @@ const FileItem: React.FC<FileItemProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(name);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -56,15 +45,16 @@ const FileItem: React.FC<FileItemProps> = ({
     setShowMenu(false);
   };
 
-  const handleDelete = () => {
-    onDelete(id, category);
-    setShowMenu(false);
-  };
-
-  const handleNameSubmit = () => {
-    onRename(id, editName, category);
-    setIsEditing(false);
-  };
+  const menuItems = [
+    { label: "名前を変更", onClick: handleRename },
+    {
+      label: "削除",
+      onClick: () => {
+        onDelete(id, category);
+        setShowMenu(false);
+      },
+    },
+  ];
 
   return (
     <div
@@ -85,26 +75,27 @@ const FileItem: React.FC<FileItemProps> = ({
         <input
           value={editName}
           onChange={(e) => setEditName(e.target.value)}
-          onBlur={handleNameSubmit}
-          onKeyPress={(e) => e.key === "Enter" && handleNameSubmit()}
+          onBlur={() => {
+            onRename(id, editName, category);
+            setIsEditing(false);
+          }}
+          onKeyPress={(e) => {
+            if (e.key === "Enter") {
+              onRename(id, editName, category);
+              setIsEditing(false);
+            }
+          }}
           autoFocus
         />
       ) : (
         name
       )}
       {showMenu && (
-        <div
-          ref={menuRef}
-          className={styles.contextMenu}
-          style={{
-            left: menuPosition.x,
-            top: menuPosition.y,
-            position: "fixed",
-          }}
-        >
-          <button onClick={handleRename}>名前を変更</button>
-          <button onClick={handleDelete}>削除</button>
-        </div>
+        <ContextMenu
+          items={menuItems}
+          position={menuPosition}
+          onClose={() => setShowMenu(false)}
+        />
       )}
     </div>
   );
