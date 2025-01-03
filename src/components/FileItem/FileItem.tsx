@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd";
-import { FileCategory } from "../../types/File";
+import { FileCategory } from "@/types/File";
 import styles from "./FileItem.module.scss";
 
 interface FileItemProps {

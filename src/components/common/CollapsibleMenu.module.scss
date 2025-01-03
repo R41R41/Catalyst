@@ -1,0 +1,38 @@
+@import "@/styles/variables";
+
+.menuItem {
+  width: 100%;
+}
+
+.menuHeader {
+  padding: 8px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+
+  &:hover {
+    background-color: $color-background-hover;
+  }
+
+  &.active {
+    background-color: $color-background-active;
+  }
+
+  &.indented {
+    background-color: $color-background-secondary;
+  }
+}
+
+.submenu {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+
+  &.expanded {
+    max-height: 500px;
+    opacity: 1;
+  }
+}

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { getCompletion, findRelatedContents } from "../../services/openai";
-import { Prompt } from "../../services/promptApi";
-import { FileCategory, FileData } from "../../types/File";
+import { getCompletion, findRelatedContents } from "@/services/openai";
+import { Prompt } from "@/services/promptApi";
+import { FileCategory, FileData } from "@/types/File";
 import styles from "./Editor.module.scss";
 
 interface EditorProps {

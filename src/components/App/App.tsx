@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import Editor from "../Editor/Editor";
-import Sidebar from "../Sidebar/Sidebar";
+import Editor from "@/components/Editor/Editor";
+import Sidebar from "@/components/Sidebar/Sidebar";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import {
@@ -19,12 +19,12 @@ import {
   updateCharacter,
   updateScenario,
   updateSetting,
-} from "../../services/api";
-import { FileData, FileCategory } from "../../types/File";
-import { fetchPrompts, updatePrompt, Prompt } from "../../services/promptApi";
-import SettingsModal from "../SettingsModal/SettingsModal";
+} from "@/services/api";
+import { FileData, FileCategory } from "@/types/File";
+import { fetchPrompts, updatePrompt, Prompt } from "@/services/promptApi";
+import SettingsModal from "@/components/SettingsModal/SettingsModal";
 import { v4 as uuidv4 } from "uuid";
-import { Header } from "../Header/Header";
+import { Header } from "@/components/Header/Header";
 
 const App: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);

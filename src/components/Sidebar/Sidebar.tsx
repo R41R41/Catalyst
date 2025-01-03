@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styles from "./Sidebar.module.scss";
-import { FileData, FileCategory } from "../../types/File";
-import SidebarSection from "../SidebarSection/SidebarSection";
+import { FileData, FileCategory } from "@/types/File";
+import SidebarSection from "@/components/SidebarSection/SidebarSection";
 
 interface SidebarProps {
   files: FileData[];
@@ -54,7 +54,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div className={styles.sidebar}>
       <SidebarSection
-        title="キャラクター設定"
+        title="キャラクター"
         category="character"
         files={getFilesByCategory("character")}
         isExpanded={expandedSections.includes("character")}

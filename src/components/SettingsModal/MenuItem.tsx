@@ -1,5 +1,5 @@
 import React from "react";
-import { KeyboardArrowRight } from "@mui/icons-material";
+import { ToggleIcon } from "@/components/common/ToggleIcon";
 import styles from "./MenuItem.module.scss";
 
 interface MenuItemProps {
@@ -23,7 +23,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
         className={`${styles.menuHeader} ${isActive ? styles.active : ""}`}
         onClick={onClick}
       >
-        <KeyboardArrowRight className={isExpanded ? styles.expanded : ""} />
+        <ToggleIcon isExpanded={isExpanded} />
         <span>{title}</span>
       </div>
       {isExpanded && children}

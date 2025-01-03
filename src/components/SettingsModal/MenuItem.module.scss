@@ -18,11 +18,4 @@
   &.active {
     background-color: $color-background-active;
   }
-
-  svg {
-    transition: transform 0.3s ease;
-    &.expanded {
-      transform: rotate(90deg);
-    }
-  }
 }

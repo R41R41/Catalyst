@@ -19,30 +19,28 @@
   &:hover {
     background-color: $color-background-hover;
   }
-
-  svg {
-    transition: transform 0.3s ease;
-    &.expanded {
-      transform: rotate(90deg);
-    }
-  }
 }
 
 .submenuItems {
   background-color: $color-background-secondary;
-  max-height: 0;
+  height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: height 0.3s ease;
+  opacity: 0;
 
   &.expanded {
-    max-height: 500px;
+    height: 96px;
+    opacity: 1;
   }
 }
 
 .submenuItem {
+  height: 16px;
   padding: 8px 16px 8px 56px;
   cursor: pointer;
   font-size: 14px;
+  display: flex;
+  align-items: center;
 
   &:hover {
     background-color: $color-background-hover;

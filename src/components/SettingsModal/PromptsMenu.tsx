@@ -1,9 +1,21 @@
 import React from "react";
-import { KeyboardArrowRight } from "@mui/icons-material";
-import styles from "./PromptsMenu.module.scss";
-import { MenuItem } from "./MenuItem";
-import { Prompt } from "../../services/promptApi";
+import { CollapsibleMenu } from "../common/CollapsibleMenu";
 import { PROMPT_SECTIONS } from "./promptConstants";
+import { Prompt } from "@/services/promptApi";
+
+// メニュー構造の定義
+const menuStructure = {
+  id: "prompts",
+  name: "Prompts",
+  children: PROMPT_SECTIONS.map((section) => ({
+    id: section.category,
+    name: section.name,
+    children: section.groups.map((group) => ({
+      id: group.id,
+      name: group.name,
+    })),
+  })),
+};
 
 interface PromptsMenuProps {
   activeTab: string;
@@ -23,49 +35,12 @@ export const PromptsMenu: React.FC<PromptsMenuProps> = ({
   onPromptSelect,
 }) => {
   return (
-    <MenuItem
-      title="Prompts"
-      isActive={activeTab === "prompts"}
-      isExpanded={expandedTabs.includes("prompts")}
-      onClick={() => onTabToggle("prompts")}
-    >
-      <div className={styles.submenu}>
-        {PROMPT_SECTIONS.map((section) => (
-          <div key={section.category} className={styles.submenuGroup}>
-            <div
-              className={styles.submenuHeader}
-              onClick={() => onTabToggle(section.category)}
-            >
-              <KeyboardArrowRight
-                className={
-                  expandedTabs.includes(section.category) ? styles.expanded : ""
-                }
-              />
-              <span>{section.name}</span>
-            </div>
-            <div
-              className={`${styles.submenuItems} ${
-                expandedTabs.includes(section.category) ? styles.expanded : ""
-              }`}
-            >
-              {section.groups.map((group) => {
-                const prompt = prompts.find((p) => p.name === group.id);
-                return prompt ? (
-                  <div
-                    key={group.id}
-                    className={`${styles.submenuItem} ${
-                      activeSubTab === group.id ? styles.active : ""
-                    }`}
-                    onClick={() => onPromptSelect(group.id)}
-                  >
-                    {group.name}
-                  </div>
-                ) : null;
-              })}
-            </div>
-          </div>
-        ))}
-      </div>
-    </MenuItem>
+    <CollapsibleMenu
+      item={menuStructure}
+      activeItemId={activeSubTab || undefined}
+      expandedIds={expandedTabs}
+      onToggle={onTabToggle}
+      onSelect={onPromptSelect}
+    />
   );
 };

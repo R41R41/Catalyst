@@ -1,11 +1,10 @@
-@import "@/styles/_variables";
+@import "@/styles/variables";
 
 .sidebar {
   width: 200px;
   height: 100%;
   background-color: $color-background-primary;
   border-right: 1px solid $color-border;
-  padding: 10px;
   display: flex;
   flex-direction: column;
   color: $color-text-primary;

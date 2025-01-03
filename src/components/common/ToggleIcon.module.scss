@@ -1,0 +1,7 @@
+@import "@/styles/variables";
+
+.toggleIcon {
+  &.expanded {
+    transform: rotate(90deg);
+  }
+}

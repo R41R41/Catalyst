@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
-import styles from "./SettingsModal.module.scss";
-import { Prompt } from "../../services/promptApi";
-import { MenuItem } from "./MenuItem";
-import { PromptsMenu } from "./PromptsMenu";
+import styles from "@/components/SettingsModal/SettingsModal.module.scss";
+import { Prompt } from "@/services/promptApi";
+import { MenuItem } from "@/components/SettingsModal/MenuItem";
+import { PromptsMenu } from "@/components/SettingsModal/PromptsMenu";
 
 type SettingsTab = "prompts" | "theme" | "openai";
 type SettingsSubTab = string | null;
