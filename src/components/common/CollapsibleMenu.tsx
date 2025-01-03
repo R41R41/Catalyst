@@ -6,36 +6,40 @@ interface MenuItemType {
   id: string;
   name: string;
   children?: MenuItemType[];
+  isDirty?: boolean;
 }
 
 interface CollapsibleMenuProps {
   item: MenuItemType;
   level?: number;
-  isExpanded?: boolean;
   activeItemId?: string;
   expandedIds: string[];
   onToggle: (id: string) => void;
   onSelect: (id: string) => void;
   children?: React.ReactNode;
+  dirtyItems?: Set<string>;
 }
 
 export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
   item,
   level = 0,
-  isExpanded = false,
   activeItemId,
   expandedIds,
   onToggle,
   onSelect,
   children,
+  dirtyItems = new Set(),
 }) => {
   const hasChildren = item.children && item.children.length > 0;
+  const isActive = activeItemId === item.id;
+  const isExpanded = expandedIds.includes(item.id);
+  const isDirty = dirtyItems.has(item.id) || item.isDirty;
 
   return (
     <div className={styles.menuItem}>
       <div
-        className={`${styles.menuHeader} ${level > 0 ? styles.indented : ""} ${
-          activeItemId === item.id ? styles.active : ""
+        className={`${styles.menuHeader} ${isActive ? styles.active : ""} ${
+          isDirty ? styles.dirty : ""
         }`}
         style={{ paddingLeft: `${12 + level * 20}px` }}
         onClick={() => {
@@ -46,16 +50,12 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
           }
         }}
       >
-        {hasChildren && (
-          <ToggleIcon isExpanded={expandedIds.includes(item.id)} />
-        )}
+        {hasChildren && <ToggleIcon isExpanded={isExpanded} />}
         <span>{item.name}</span>
       </div>
       {hasChildren && (
         <div
-          className={`${styles.submenu} ${
-            expandedIds.includes(item.id) ? styles.expanded : ""
-          }`}
+          className={`${styles.submenu} ${isExpanded ? styles.expanded : ""}`}
         >
           {children ||
             item.children?.map((child) => (
@@ -67,6 +67,7 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
                 expandedIds={expandedIds}
                 onToggle={onToggle}
                 onSelect={onSelect}
+                dirtyItems={dirtyItems}
               />
             ))}
         </div>

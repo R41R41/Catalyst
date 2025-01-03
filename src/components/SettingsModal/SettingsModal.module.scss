@@ -6,9 +6,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  @include themed() {
-    background-color: t(color-overlay);
-  }
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,43 +14,55 @@
 }
 
 .modal {
-  position: relative;
-  @include themed() {
-    background: t(color-background-primary);
-  }
-  border-radius: 8px;
-  width: 90%;
-  height: 90vh;
+  width: 80%;
+  height: 80%;
   display: flex;
   flex-direction: column;
   @include themed() {
-    color: t(color-text-primary);
+    background-color: t(color-background-primary);
+  }
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 12px;
+  @include themed() {
+    background-color: t(color-background-secondary);
+    border-bottom: 1px solid t(color-border);
+  }
+
+  span {
+    font-size: 16px;
+    @include themed() {
+      color: t(color-text-primary);
+    }
   }
 }
 
 .closeButton {
-  position: absolute;
-  top: 10px;
-  right: 10px;
   background: none;
   border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
   @include themed() {
     color: t(color-text-primary);
   }
-  font-size: 20px;
-  cursor: pointer;
-  z-index: 1;
 
   &:hover {
     @include themed() {
-      color: t(color-text-muted);
+      color: t(color-text-secondary);
     }
   }
 }
 
 .container {
   display: flex;
-  height: 100%;
+  height: calc(100% - 64px);
   overflow: hidden;
 }
 

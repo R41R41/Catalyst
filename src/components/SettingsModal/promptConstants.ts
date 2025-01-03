@@ -13,23 +13,23 @@ export interface PromptSection {
   groups: PromptGroup[];
 }
 
-export const PROMPT_SECTIONS: PromptSection[] = [
+export const PROMPT_SECTIONS = [
   {
-    category: "completion",
+    category: "predict",
     name: "補完",
     groups: [
-      { id: "predict_character", name: "キャラクター", type: "character" },
-      { id: "predict_setting", name: "設定", type: "setting" },
-      { id: "predict_scenario", name: "シナリオ", type: "scenario" },
+      { id: "character", name: "キャラクター" },
+      { id: "setting", name: "設定" },
+      { id: "scenario", name: "シナリオ" },
     ],
   },
   {
     category: "review",
     name: "レビュー",
     groups: [
-      { id: "review_character", name: "キャラクター", type: "character" },
-      { id: "review_setting", name: "設定", type: "setting" },
-      { id: "review_scenario", name: "シナリオ", type: "scenario" },
+      { id: "character", name: "キャラクター" },
+      { id: "setting", name: "設定" },
+      { id: "scenario", name: "シナリオ" },
     ],
   },
 ];

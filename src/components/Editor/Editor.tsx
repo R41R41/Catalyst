@@ -1,7 +1,8 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import { getCompletion, findRelatedContents } from "@/services/openai";
 import { Prompt } from "@/services/promptApi";
 import { FileCategory, FileData } from "@/types/File";
+import BaseEditor from "../BaseEditor/BaseEditor";
 import styles from "./Editor.module.scss";
 
 interface EditorProps {
@@ -16,77 +17,49 @@ interface EditorProps {
 }
 
 const Editor: React.FC<EditorProps> = ({
-  content,
   category,
   onContentChange,
-  systemPrompts,
-  allFiles,
   currentFileName,
-  onSave,
-  isDirty,
+  allFiles,
+  systemPrompts,
+  ...restProps
 }) => {
-  const MAX_HISTORY = 100;
-  const [completion, setCompletion] = useState("");
   const [isCompleted, setIsCompleted] = useState(false);
-  const editorRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const completionRef = useRef<HTMLSpanElement | null>(null);
   const originalContentRef = useRef<string>("");
-  const historyRef = useRef<string[]>([]);
-  const historyIndexRef = useRef<number>(-1);
-  const tempContentRef = useRef<string>("");
+  const editorRef = useRef<HTMLDivElement>(null);
 
   const insertCompletion = useCallback(async (completionText: string) => {
-    if (editorRef.current) {
-      const range = document.createRange();
-      range.selectNodeContents(editorRef.current);
-      range.collapse(false);
+    const baseEditorContent = editorRef.current?.querySelector(
+      '[contenteditable="true"]'
+    );
+    if (baseEditorContent) {
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0) || document.createRange();
+
       const span = document.createElement("span");
       span.style.color = "gray";
       span.textContent = completionText;
       completionRef.current = span;
+
+      range.collapse(false);
       range.insertNode(span);
-    }
-  }, []);
 
-  const saveCaretPosition = () => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      return selection.getRangeAt(0);
-    }
-    return null;
-  };
-
-  const restoreCaretPosition = (range: Range | null) => {
-    if (range && editorRef.current) {
-      const selection = window.getSelection();
       if (selection) {
         selection.removeAllRanges();
         selection.addRange(range);
       }
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    if (editorRef.current && editorRef.current.textContent !== content) {
-      const savedRange = saveCaretPosition();
-      editorRef.current.textContent = content;
-      restoreCaretPosition(savedRange);
-    }
-  }, [content]);
+  const handleBaseEditorChange = useCallback(
+    async (content: string, _category: FileCategory) => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
 
-  const handleInput = useCallback(async () => {
-    const newContent = editorRef.current?.textContent || "";
-    await onContentChange(newContent, category);
-    tempContentRef.current = newContent;
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(async () => {
-      if (editorRef.current) {
-        const content = editorRef.current.textContent || "";
+      timeoutRef.current = setTimeout(async () => {
         if (content) {
           originalContentRef.current = content;
 
@@ -104,7 +77,6 @@ const Editor: React.FC<EditorProps> = ({
             return;
           }
 
-          console.log("補完します");
           const result = await getCompletion(
             currentFileName,
             content,
@@ -112,89 +84,47 @@ const Editor: React.FC<EditorProps> = ({
             relatedContents
           );
 
-          if (
-            result &&
-            editorRef.current?.textContent === originalContentRef.current
-          ) {
-            setCompletion(result);
-            insertCompletion(result);
+          if (result && content === originalContentRef.current) {
+            await insertCompletion(result);
             setIsCompleted(true);
           }
         }
-      }
-    }, 1000);
-  }, [category, onContentChange, systemPrompts, allFiles, insertCompletion]);
+      }, 1000);
+
+      onContentChange(content, _category);
+    },
+    [
+      category,
+      currentFileName,
+      systemPrompts,
+      allFiles,
+      insertCompletion,
+      onContentChange,
+    ]
+  );
 
   useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        onSave();
-      }
-
-      if (e.key === "Enter") {
-        const newHistory = [
-          ...historyRef.current.slice(0, historyIndexRef.current + 1),
-          tempContentRef.current,
-        ];
-        if (newHistory.length > MAX_HISTORY) {
-          newHistory.shift();
-        }
-        historyRef.current = newHistory;
-        historyIndexRef.current = Math.min(
-          historyRef.current.length - 1,
-          MAX_HISTORY - 1
-        );
-      }
-
-      if ((e.metaKey || e.ctrlKey) && !e.shiftKey && e.key === "z") {
-        e.preventDefault();
-        if (historyIndexRef.current > 0) {
-          historyIndexRef.current--;
-          const previousContent = historyRef.current[historyIndexRef.current];
-          if (editorRef.current && previousContent !== undefined) {
-            editorRef.current.textContent = previousContent;
-            await onContentChange(previousContent, category);
-          }
-        }
-      }
-
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === "z") {
-        e.preventDefault();
-        if (historyIndexRef.current < historyRef.current.length - 1) {
-          historyIndexRef.current++;
-          const nextContent = historyRef.current[historyIndexRef.current];
-          if (editorRef.current && nextContent !== undefined) {
-            editorRef.current.textContent = nextContent;
-            await onContentChange(nextContent, category);
-          }
-        }
-      }
-
-      if (isCompleted) {
+    const handleKeyDown = (e: Event) => {
+      if (isCompleted && e instanceof KeyboardEvent) {
         if (e.key === "Tab") {
           e.preventDefault();
           if (completionRef.current) {
-            completionRef.current.style.color = "white";
-            const newContent = editorRef.current?.textContent || "";
-            await onContentChange(newContent, category);
-
-            const newHistory = [
-              ...historyRef.current.slice(0, historyIndexRef.current + 1),
-              newContent,
-            ];
-            if (newHistory.length > MAX_HISTORY) {
-              newHistory.shift();
-            }
-            historyRef.current = newHistory;
-            historyIndexRef.current = Math.min(
-              historyRef.current.length - 1,
-              MAX_HISTORY - 1
+            completionRef.current.style.color = "inherit";
+            const baseEditorContent = editorRef.current?.querySelector(
+              '[contenteditable="true"]'
             );
+            const newContent = baseEditorContent?.textContent || "";
+
+            const inputEvent = new InputEvent("input", {
+              bubbles: true,
+              cancelable: true,
+            });
+            baseEditorContent?.dispatchEvent(inputEvent);
+
+            onContentChange(newContent, category);
           }
         } else {
           if (completionRef.current) {
-            setCompletion("");
             completionRef.current.remove();
             completionRef.current = null;
           }
@@ -203,33 +133,24 @@ const Editor: React.FC<EditorProps> = ({
       }
     };
 
-    const editor = editorRef.current;
-    editor?.addEventListener("keydown", handleKeyDown);
+    const baseEditorContent = editorRef.current?.querySelector(
+      '[contenteditable="true"]'
+    );
+    baseEditorContent?.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      editor?.removeEventListener("keydown", handleKeyDown);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
+      baseEditorContent?.removeEventListener("keydown", handleKeyDown);
     };
-  }, [
-    isCompleted,
-    insertCompletion,
-    completion,
-    systemPrompts,
-    onSave,
-    category,
-    onContentChange,
-    allFiles,
-  ]);
+  }, [isCompleted, category, onContentChange]);
 
   return (
-    <div className={styles.editor}>
-      <div
-        ref={editorRef}
-        contentEditable
-        className={styles["content-editable"]}
-        onInput={handleInput}
+    <div className={styles.editor} ref={editorRef}>
+      <BaseEditor
+        content={restProps.content}
+        category={category}
+        onContentChange={handleBaseEditorChange}
+        onSave={restProps.onSave}
+        isDirty={restProps.isDirty}
       />
     </div>
   );

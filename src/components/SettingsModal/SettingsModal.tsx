@@ -3,6 +3,7 @@ import styles from "@/components/SettingsModal/SettingsModal.module.scss";
 import { Prompt } from "@/services/promptApi";
 import { PromptsMenu } from "@/components/SettingsModal/PromptsMenu";
 import { ThemeSettings } from "./ThemeSettings";
+import PromptEditor from "./PromptEditor/PromptEditor";
 
 type SettingsTab = "prompts" | "theme" | "openai";
 type SettingsSubTab = string | null;
@@ -24,6 +25,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<SettingsSubTab>(null);
   const [expandedTabs, setExpandedTabs] = useState<string[]>(["prompts"]);
   const [localPrompts, setLocalPrompts] = useState<Prompt[]>(prompts);
+  const [dirtyPrompts, setDirtyPrompts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setLocalPrompts(prompts);
@@ -46,10 +48,14 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       prompt.name === activeSubTab ? { ...prompt, content } : prompt
     );
     setLocalPrompts(newPrompts);
+    if (activeSubTab) {
+      setDirtyPrompts((prev) => new Set(prev).add(activeSubTab));
+    }
   };
 
   const handleSave = useCallback(() => {
     onSavePrompts(localPrompts);
+    setDirtyPrompts(new Set());
   }, [localPrompts, onSavePrompts]);
 
   const toggleTab = (tabId: string) => {
@@ -72,21 +78,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         const currentPrompt = localPrompts.find((p) => p.name === activeSubTab);
         return currentPrompt ? (
           <div className={styles.promptEditor}>
-            <textarea
-              value={currentPrompt.content}
-              onChange={(e) => handlePromptChange(e.target.value)}
-              placeholder="プロンプトの内容"
+            <PromptEditor
+              content={currentPrompt.content}
+              onContentChange={(content) => handlePromptChange(content)}
+              onSave={handleSave}
+              isDirty={isCurrentPromptModified()}
             />
-            <div className={styles.buttonContainer}>
-              <button
-                className={`${styles.saveButton} ${
-                  !isCurrentPromptModified() ? styles.disabled : ""
-                }`}
-                onClick={handleSave}
-              >
-                保存
-              </button>
-            </div>
           </div>
         ) : null;
       case "theme":
@@ -101,9 +98,12 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <div className={styles.overlay} onClick={handleOverlayClick}>
       <div className={styles.modal}>
-        <button className={styles.closeButton} onClick={onClose}>
-          ×
-        </button>
+        <div className={styles.header}>
+          <span>設定</span>
+          <button className={styles.closeButton} onClick={onClose}>
+            ×
+          </button>
+        </div>
         <div className={styles.container}>
           <div className={styles.sidebar}>
             <PromptsMenu
@@ -119,6 +119,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 setActiveSubTab(promptId);
                 setActiveTab("prompts");
               }}
+              dirtyPrompts={dirtyPrompts}
             />
             <div
               className={`${styles.menuItem} ${

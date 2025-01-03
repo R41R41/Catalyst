@@ -5,12 +5,15 @@
 }
 
 .menuHeader {
-  padding: 8px 16px;
+  padding: 12px 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+
+  @include themed() {
+    color: t(color-text-primary);
+  }
 
   &:hover {
     @include themed() {
@@ -24,9 +27,9 @@
     }
   }
 
-  &.indented {
+  &.dirty {
     @include themed() {
-      background-color: t(color-background-secondary);
+      color: t(color-text-dirty);
     }
   }
 }
