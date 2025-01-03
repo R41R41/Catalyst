@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useEffect } from "react";
 import styles from "@/components/SettingsModal/SettingsModal.module.scss";
 import { Prompt } from "@/services/promptApi";
-import { MenuItem } from "@/components/SettingsModal/MenuItem";
 import { PromptsMenu } from "@/components/SettingsModal/PromptsMenu";
+import { ThemeSettings } from "./ThemeSettings";
 
 type SettingsTab = "prompts" | "theme" | "openai";
 type SettingsSubTab = string | null;
@@ -22,10 +22,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("prompts");
   const [activeSubTab, setActiveSubTab] = useState<SettingsSubTab>(null);
-  const [expandedTabs, setExpandedTabs] = useState<string[]>([
-    "prompts",
-    "completion",
-  ]);
+  const [expandedTabs, setExpandedTabs] = useState<string[]>(["prompts"]);
   const [localPrompts, setLocalPrompts] = useState<Prompt[]>(prompts);
 
   useEffect(() => {
@@ -93,9 +90,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         ) : null;
       case "theme":
-        return <div>テーマ設定（準備中）</div>;
+        return <ThemeSettings />;
       case "openai":
         return <div>OpenAI API設定（準備中）</div>;
+      default:
+        return null;
     }
   };
 
@@ -121,18 +120,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 setActiveTab("prompts");
               }}
             />
-            <MenuItem
-              title="Theme"
-              isActive={activeTab === "theme"}
-              isExpanded={expandedTabs.includes("theme")}
-              onClick={() => toggleTab("theme")}
-            />
-            <MenuItem
-              title="OpenAI API"
-              isActive={activeTab === "openai"}
-              isExpanded={expandedTabs.includes("openai")}
-              onClick={() => toggleTab("openai")}
-            />
+            <div
+              className={`${styles.menuItem} ${
+                activeTab === "theme" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("theme")}
+            >
+              Theme
+            </div>
+            <div
+              className={`${styles.menuItem} ${
+                activeTab === "openai" ? styles.active : ""
+              }`}
+              onClick={() => setActiveTab("openai")}
+            >
+              OpenAI API
+            </div>
           </div>
           <div className={styles.content}>{renderContent()}</div>
         </div>

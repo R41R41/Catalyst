@@ -2,12 +2,16 @@
 
 .contextMenu {
   position: absolute;
-  background: rgba($color-background-primary, 0.5);
-  border: 1px solid rgba($color-text-muted, 0.2);
+  @include themed() {
+    background: rgba(t(color-background-primary), 0.5);
+    border: 1px solid rgba(t(color-text-muted), 0.2);
+  }
   border-radius: 4px;
   padding: 4px 0;
   z-index: 1000;
-  box-shadow: 0 2px 5px $color-shadow;
+  @include themed() {
+    box-shadow: 0 2px 5px t(color-shadow);
+  }
 
   button {
     display: block;
@@ -15,12 +19,16 @@
     padding: 8px 16px;
     border: none;
     background: none;
-    color: $color-text-primary;
+    @include themed() {
+      color: t(color-text-primary);
+    }
     text-align: left;
     cursor: pointer;
 
     &:hover {
-      background-color: $color-background-hover;
+      @include themed() {
+        background-color: t(color-background-hover);
+      }
     }
   }
 }
@@ -30,20 +38,29 @@
   position: relative;
   padding: 8px 16px 8px 16px;
   cursor: pointer;
-  color: $color-text-primary;
+  user-select: none;
   height: 16px;
+  @include themed() {
+    color: t(color-text-primary);
 
-  &:hover {
-    background-color: $color-background-hover;
-  }
+    &.dirty {
+      color: t(color-text-dirty);
+    }
 
-  &.active {
-    background-color: $color-background-active;
+    &:hover {
+      background-color: t(color-background-hover);
+    }
+
+    &.active {
+      background-color: t(color-background-active);
+    }
   }
 
   &.dragging {
-    background-color: $color-background-dragging;
-    opacity: 0.8;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    @include themed() {
+      background-color: t(color-background-dragging);
+      opacity: 0.8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
   }
 }

@@ -1,7 +1,9 @@
 @import "@/styles/variables";
 
 .section {
-  border-bottom: 1px solid $color-border;
+  @include themed() {
+    border-bottom: 1px solid t(color-border);
+  }
 }
 
 .sectionHeader {
@@ -11,10 +13,14 @@
   justify-content: space-between;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  background-color: $color-background-secondary;
+  @include themed() {
+    background-color: t(color-background-secondary);
+  }
 
   &:hover {
-    background-color: $color-background-hover;
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
   }
 }
 
@@ -25,10 +31,14 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  color: $color-text-secondary;
+  @include themed() {
+    color: t(color-text-secondary);
+  }
 
   &:hover {
-    background-color: $color-background-hover;
-    border-color: $color-text-muted;
+    @include themed() {
+      background-color: t(color-background-hover);
+      border-color: t(color-text-muted);
+    }
   }
 }

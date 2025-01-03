@@ -6,7 +6,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: $color-overlay;
+  @include themed() {
+    background-color: t(color-overlay);
+  }
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,13 +17,17 @@
 
 .modal {
   position: relative;
-  background: $color-background-primary;
+  @include themed() {
+    background: t(color-background-primary);
+  }
   border-radius: 8px;
   width: 90%;
   height: 90vh;
   display: flex;
   flex-direction: column;
-  color: $color-text-primary;
+  @include themed() {
+    color: t(color-text-primary);
+  }
 }
 
 .closeButton {
@@ -30,13 +36,17 @@
   right: 10px;
   background: none;
   border: none;
-  color: $color-text-primary;
+  @include themed() {
+    color: t(color-text-primary);
+  }
   font-size: 20px;
   cursor: pointer;
   z-index: 1;
 
   &:hover {
-    color: $color-text-muted;
+    @include themed() {
+      color: t(color-text-muted);
+    }
   }
 }
 
@@ -48,8 +58,10 @@
 
 .sidebar {
   width: 200px;
-  background-color: $color-background-secondary;
-  border-right: 1px solid $color-border;
+  @include themed() {
+    background-color: t(color-background-secondary);
+    border-right: 1px solid t(color-border);
+  }
 }
 
 .content {
@@ -72,8 +84,10 @@
     font-size: 14px;
     border: none;
     resize: none;
-    background-color: $color-background-primary;
-    color: $color-text-primary;
+    @include themed() {
+      background-color: t(color-background-primary);
+      color: t(color-text-primary);
+    }
 
     &:focus {
       outline: none;
@@ -83,10 +97,14 @@
 
 .promptPath {
   font-size: 16px;
-  color: $color-text-secondary;
+  @include themed() {
+    color: t(color-text-secondary);
+  }
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid $color-border;
+  @include themed() {
+    border-bottom: 1px solid t(color-border);
+  }
 }
 
 .buttonContainer {
@@ -97,32 +115,60 @@
 .saveButton {
   height: 40px;
   padding: 8px 24px;
-  background-color: $color-button-primary;
-  color: $color-text-primary;
+  @include themed() {
+    background-color: t(color-button-primary);
+    color: t(color-text-primary);
+  }
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
 
   &:hover {
-    background-color: $color-button-primary-hover;
+    @include themed() {
+      background-color: t(color-button-primary-hover);
+    }
   }
 
   &:active {
-    background-color: $color-button-primary-active;
+    @include themed() {
+      background-color: t(color-button-primary-active);
+    }
   }
 
   &.disabled {
-    background-color: $color-button-disabled;
-    color: $color-text-secondary;
+    @include themed() {
+      background-color: t(color-button-disabled);
+      color: t(color-text-secondary);
+    }
     cursor: default;
 
     &:hover {
-      background-color: $color-button-disabled;
+      @include themed() {
+        background-color: t(color-button-disabled);
+      }
     }
 
     &:active {
-      background-color: $color-button-disabled;
+      @include themed() {
+        background-color: t(color-button-disabled);
+      }
+    }
+  }
+}
+
+.menuItem {
+  padding: 12px 16px;
+  cursor: pointer;
+  @include themed() {
+    color: t(color-text-primary);
+
+    &:hover {
+      background-color: t(color-background-hover);
+    }
+
+    &.active {
+      background-color: t(color-background-active);
     }
   }
 }

@@ -1,11 +1,15 @@
 @import "@/styles/variables";
 
 .submenu {
-  background-color: $color-background-secondary;
+  @include themed() {
+    background-color: t(color-background-secondary);
+  }
 }
 
 .submenuGroup {
-  background-color: $color-background-secondary;
+  @include themed() {
+    background-color: t(color-background-secondary);
+  }
 }
 
 .submenuHeader {
@@ -17,12 +21,16 @@
   font-size: 14px;
 
   &:hover {
-    background-color: $color-background-hover;
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
   }
 }
 
 .submenuItems {
-  background-color: $color-background-secondary;
+  @include themed() {
+    background-color: t(color-background-secondary);
+  }
   height: 0;
   overflow: hidden;
   transition: height 0.3s ease;
@@ -43,10 +51,14 @@
   align-items: center;
 
   &:hover {
-    background-color: $color-background-hover;
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
   }
 
   &.active {
-    background-color: $color-background-active;
+    @include themed() {
+      background-color: t(color-background-active);
+    }
   }
 }

@@ -63,13 +63,10 @@ const FileItem: React.FC<FileItemProps> = ({
       {...provided.dragHandleProps}
       className={`${styles.file} ${isActive ? styles.active : ""} ${
         snapshot.isDragging ? styles.dragging : ""
-      }`}
+      } ${isDirty ? styles.dirty : ""}`}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      style={{
-        ...provided.draggableProps.style,
-        color: isDirty ? "#ffeb3b" : "white",
-      }}
+      style={provided.draggableProps.style}
     >
       {isEditing ? (
         <input

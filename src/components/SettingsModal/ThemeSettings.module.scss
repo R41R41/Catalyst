@@ -1,0 +1,31 @@
+@import "@/styles/variables";
+
+.themeSettings {
+  padding: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    @include themed() {
+      color: t(color-text-primary);
+    }
+  }
+}
+
+.themeOption {
+  display: flex;
+  gap: 20px;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    @include themed() {
+      color: t(color-text-primary);
+    }
+  }
+
+  input[type="radio"] {
+    cursor: pointer;
+  }
+}

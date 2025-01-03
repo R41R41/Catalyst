@@ -13,15 +13,21 @@
   font-size: 14px;
 
   &:hover {
-    background-color: $color-background-hover;
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
   }
 
   &.active {
-    background-color: $color-background-active;
+    @include themed() {
+      background-color: t(color-background-active);
+    }
   }
 
   &.indented {
-    background-color: $color-background-secondary;
+    @include themed() {
+      background-color: t(color-background-secondary);
+    }
   }
 }
 

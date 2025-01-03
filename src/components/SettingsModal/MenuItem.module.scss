@@ -1,7 +1,9 @@
 @import "@/styles/variables";
 
 .menuItem {
-  border-bottom: 1px solid $color-border;
+  @include themed() {
+    border-bottom: 1px solid t(color-border);
+  }
 }
 
 .menuHeader {
@@ -12,10 +14,14 @@
   gap: 8px;
 
   &:hover {
-    background-color: $color-background-hover;
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
   }
 
   &.active {
-    background-color: $color-background-active;
+    @include themed() {
+      background-color: t(color-background-active);
+    }
   }
 }

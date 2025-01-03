@@ -3,11 +3,15 @@
 .sidebar {
   width: 200px;
   height: 100%;
-  background-color: $color-background-primary;
-  border-right: 1px solid $color-border;
+  @include themed() {
+    background-color: t(color-background-primary);
+    border-right: 1px solid t(color-border);
+  }
   display: flex;
   flex-direction: column;
-  color: $color-text-primary;
+  @include themed() {
+    color: t(color-text-primary);
+  }
 }
 
 .footer {
@@ -18,12 +22,16 @@
 .promptButton {
   width: 100%;
   padding: 0.5rem;
-  background-color: $color-button-primary;
-  border: 1px solid $color-button-primary;
-  color: $color-text-primary;
+  @include themed() {
+    background-color: t(color-button-primary);
+    border: 1px solid t(color-button-primary);
+    color: t(color-text-primary);
+  }
   cursor: pointer;
 
   &:hover {
-    background-color: $color-button-primary-hover;
+    @include themed() {
+      background-color: t(color-button-primary-hover);
+    }
   }
 }
