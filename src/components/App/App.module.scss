@@ -1,8 +1,16 @@
+@import "@/styles/_variables";
+
 .container {
   display: flex;
+  flex-direction: column;
   height: 100%;
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
+}
+
+.mainSection {
+  display: flex;
+  height: 100%;
 }

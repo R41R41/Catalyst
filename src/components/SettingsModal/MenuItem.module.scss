@@ -1,0 +1,28 @@
+@import "@/styles/variables";
+
+.menuItem {
+  border-bottom: 1px solid $color-border;
+}
+
+.menuHeader {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background-color: $color-background-hover;
+  }
+
+  &.active {
+    background-color: $color-background-active;
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+    &.expanded {
+      transform: rotate(90deg);
+    }
+  }
+}

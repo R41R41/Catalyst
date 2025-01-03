@@ -1,11 +1,13 @@
+@import "@/styles/_variables";
+
 .contextMenu {
   position: absolute;
-  background: white;
-  border: 1px solid #ccc;
+  background: $color-text-primary;
+  border: 1px solid $color-text-muted;
   border-radius: 4px;
   padding: 4px 0;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px $color-shadow;
 
   button {
     display: block;
@@ -17,7 +19,7 @@
     cursor: pointer;
 
     &:hover {
-      background-color: #f0f0f0;
+      background-color: $color-background-hover;
     }
   }
 }
@@ -27,19 +29,19 @@
   position: relative;
   padding: 8px;
   cursor: pointer;
-  color: #fff;
+  color: $color-text-primary;
   height: 16px;
 
   &:hover {
-    background-color: #2a2a2a;
+    background-color: $color-background-hover;
   }
 
   &.active {
-    background-color: #37373d;
+    background-color: $color-background-active;
   }
 
   &.dragging {
-    background-color: #3d3d3d;
+    background-color: $color-background-dragging;
     opacity: 0.8;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }

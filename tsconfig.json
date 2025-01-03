@@ -9,7 +9,11 @@
     "jsx": "react",
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src", "src/services/api.ts", "src/types/scss.d.ts"]
 }

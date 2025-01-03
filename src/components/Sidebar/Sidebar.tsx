@@ -15,7 +15,6 @@ interface SidebarProps {
   ) => void;
   onDeleteFile: (fileId: string, category: FileCategory) => void;
   setFiles: (files: FileData[]) => void;
-  onEditPrompt: () => void;
   dirtyFiles: Set<string>;
 }
 
@@ -27,7 +26,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   onRenameFile,
   onDeleteFile,
   setFiles,
-  onEditPrompt,
   dirtyFiles,
 }) => {
   const [expandedSections, setExpandedSections] = useState<FileCategory[]>([
@@ -55,8 +53,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <div className={styles.sidebar}>
-      <div className={styles.serviceName}>Catalyst</div>
-
       <SidebarSection
         title="キャラクター設定"
         category="character"
@@ -98,12 +94,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         onAddFile={handleAddFile}
         dirtyFiles={dirtyFiles}
       />
-
-      <div className={styles.footer}>
-        <button className={styles.promptButton} onClick={onEditPrompt}>
-          Edit Prompt
-        </button>
-      </div>
     </div>
   );
 };

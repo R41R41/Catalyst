@@ -22,8 +22,9 @@ import {
 } from "../../services/api";
 import { FileData, FileCategory } from "../../types/File";
 import { fetchPrompts, updatePrompt, Prompt } from "../../services/promptApi";
-import PromptModal from "../PromptModal/PromptModal";
+import SettingsModal from "../SettingsModal/SettingsModal";
 import { v4 as uuidv4 } from "uuid";
+import { Header } from "../Header/Header";
 
 const App: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);
@@ -172,10 +173,6 @@ const App: React.FC = () => {
     );
   };
 
-  const handleEditPrompt = () => {
-    setIsPromptModalOpen(true);
-  };
-
   const handleSavePrompts = async (newPrompts: Prompt[]) => {
     try {
       const updatedPrompt = newPrompts.find(
@@ -216,15 +213,20 @@ const App: React.FC = () => {
     }
   };
 
+  const handleSettingsClick = () => {
+    setIsPromptModalOpen(true);
+  };
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className={styles.container}>
+        <Header onSettingsClick={handleSettingsClick} />
         {isLoading ? (
           <div>Loading...</div>
         ) : error ? (
           <div style={{ color: "red" }}>{error}</div>
         ) : (
-          <>
+          <div className={styles.mainSection}>
             <Sidebar
               files={files}
               activeFileId={activeFileId}
@@ -233,7 +235,6 @@ const App: React.FC = () => {
               onRenameFile={handleRenameFile}
               onDeleteFile={handleDeleteFile}
               setFiles={setFiles}
-              onEditPrompt={handleEditPrompt}
               dirtyFiles={dirtyFiles}
             />
             <Editor
@@ -246,13 +247,13 @@ const App: React.FC = () => {
               onSave={handleSave}
               isDirty={dirtyFiles.has(activeFileId)}
             />
-          </>
+          </div>
         )}
-        <PromptModal
+        <SettingsModal
           isOpen={isPromptModalOpen}
           onClose={() => setIsPromptModalOpen(false)}
           prompts={prompts}
-          onSave={handleSavePrompts}
+          onSavePrompts={handleSavePrompts}
         />
       </div>
     </DragDropContext>

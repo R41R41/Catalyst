@@ -1,0 +1,54 @@
+@import "@/styles/variables";
+
+.submenu {
+  background-color: $color-background-secondary;
+}
+
+.submenuGroup {
+  background-color: $color-background-secondary;
+}
+
+.submenuHeader {
+  padding: 8px 16px 8px 32px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+
+  &:hover {
+    background-color: $color-background-hover;
+  }
+
+  svg {
+    transition: transform 0.3s ease;
+    &.expanded {
+      transform: rotate(90deg);
+    }
+  }
+}
+
+.submenuItems {
+  background-color: $color-background-secondary;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+
+  &.expanded {
+    max-height: 500px;
+  }
+}
+
+.submenuItem {
+  padding: 8px 16px 8px 56px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    background-color: $color-background-hover;
+  }
+
+  &.active {
+    background-color: $color-background-active;
+  }
+}

@@ -1,18 +1,14 @@
+@import "@/styles/_variables";
+
 .sidebar {
   width: 200px;
   height: 100%;
-  background-color: #1e1e1e;
-  border-right: 1px solid #333;
+  background-color: $color-background-primary;
+  border-right: 1px solid $color-border;
   padding: 10px;
   display: flex;
   flex-direction: column;
-  color: #fff;
-}
-
-.serviceName {
-  padding: 1rem;
-  font-weight: bold;
-  border-bottom: 1px solid #333;
+  color: $color-text-primary;
 }
 
 .footer {
@@ -23,12 +19,12 @@
 .promptButton {
   width: 100%;
   padding: 0.5rem;
-  background-color: #333;
-  border: 1px solid #444;
-  color: #fff;
+  background-color: $color-button-primary;
+  border: 1px solid $color-button-primary;
+  color: $color-text-primary;
   cursor: pointer;
 
   &:hover {
-    background-color: #444;
+    background-color: $color-button-primary-hover;
   }
 }
