@@ -1,0 +1,60 @@
+.block {
+  width: 100%;
+  min-height: 24px;
+  padding: 3px 0;
+  outline: none;
+  position: relative;
+  margin: 0;
+  cursor: text;
+
+  &:hover {
+    @include themed() {
+      background-color: t(color-background-hover);
+    }
+  }
+
+  &.selected {
+    @include themed() {
+      background-color: t(color-background-active);
+    }
+  }
+}
+
+.heading1 {
+  font-size: 2em;
+  font-weight: bold;
+}
+
+.heading2 {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.heading3 {
+  font-size: 1.17em;
+  font-weight: bold;
+}
+
+.bulletList {
+  padding-left: 1.5em;
+  list-style-type: disc;
+
+  &::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+  }
+}
+
+.codeBlock {
+  font-family: monospace;
+  padding: 1em;
+  margin: 1em 0;
+  @include themed() {
+    background-color: t(color-background-secondary);
+  }
+}
+
+.paragraph {
+  margin: 0;
+}

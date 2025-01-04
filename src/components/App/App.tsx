@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Editor from "@/components/Editor/Editor";
+import Editor2 from "@/components/Editor/Editor2";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
@@ -237,13 +238,23 @@ const App: React.FC = () => {
               setFiles={setFiles}
               dirtyFiles={dirtyFiles}
             />
-            <Editor
+            {/* <Editor
               content={activeFile?.content ?? ""}
               currentFileName={activeFile?.name ?? ""}
               category={activeFile?.category ?? "scenario"}
               onContentChange={handleContentChange}
               systemPrompts={prompts}
               allFiles={files}
+              onSave={handleSave}
+              isDirty={dirtyFiles.has(activeFileId)}
+            /> */}
+            <Editor2
+              content={activeFile?.content ?? ""}
+              category={activeFile?.category ?? "scenario"}
+              onContentChange={handleContentChange}
+              systemPrompts={prompts}
+              allFiles={files}
+              currentFileName={activeFile?.name ?? ""}
               onSave={handleSave}
               isDirty={dirtyFiles.has(activeFileId)}
             />
