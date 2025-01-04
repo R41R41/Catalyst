@@ -40,15 +40,7 @@ const BlockComponent: React.FC<BlockComponentProps> = ({
   }, [isSelected]);
 
   const handleMarkdownShortcut = (content: string) => {
-    console.log("=== Markdown変換開始 ===");
-    console.log("現在の状態:", {
-      content,
-      type: block.type,
-      isTransforming: isTransformingRef.current,
-    });
-
     if (isTransformingRef.current) {
-      console.log("変換中のため、スキップ");
       return false;
     }
 
@@ -60,7 +52,6 @@ const BlockComponent: React.FC<BlockComponentProps> = ({
     isTransformingRef.current = true;
 
     if (firstChars.startsWith("# ")) {
-      console.log("h1に変換");
       blockRef.current!.textContent = restContent;
       contentRef.current = restContent;
       onTypeChange("heading1");
@@ -109,15 +100,7 @@ const BlockComponent: React.FC<BlockComponentProps> = ({
   };
 
   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-    console.log("=== Input イベント ===");
-    console.log("現在の状態:", {
-      content: e.currentTarget.textContent,
-      type: block.type,
-      isTransforming: isTransformingRef.current,
-    });
-
     if (isTransformingRef.current) {
-      console.log("変換中のため、スキップ");
       return;
     }
 
@@ -140,9 +123,6 @@ const BlockComponent: React.FC<BlockComponentProps> = ({
   const handleCompositionEnd = () => {
     isComposingRef.current = false;
   };
-
-  console.log("block:", block);
-  console.log("blockRef:", blockRef.current);
 
   return (
     <div

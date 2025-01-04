@@ -104,23 +104,15 @@ const App: React.FC = () => {
     setFiles(items);
   };
 
-  const handleContentChange = async (
-    content: string,
-    category: FileCategory
-  ) => {
+  const handleContentChange = async (content: string) => {
+    const file = files.find((f) => f.id === activeFileId);
+    if (file && content === file.content) return;
     setDirtyFiles((prev) => new Set(prev).add(activeFileId));
     setFiles(
       files.map((file) =>
         file.id === activeFileId ? { ...file, content } : file
       )
     );
-    if (category === "scenario") {
-      await updateScenario(activeFileId, content);
-    } else if (category === "character") {
-      await updateCharacter(activeFileId, content);
-    } else if (category === "setting") {
-      await updateSetting(activeFileId, content);
-    }
   };
 
   const handleAddFile = async (category: FileCategory) => {
@@ -193,7 +185,14 @@ const App: React.FC = () => {
     const file = files.find((f) => f.id === activeFileId);
     if (!file) return;
 
-    await handleContentChange(file.content, file.category);
+    await handleContentChange(file.content);
+    if (file.category === "scenario") {
+      await updateScenario(activeFileId, file.content);
+    } else if (file.category === "character") {
+      await updateCharacter(activeFileId, file.content);
+    } else if (file.category === "setting") {
+      await updateSetting(activeFileId, file.content);
+    }
     setDirtyFiles((prev) => {
       const next = new Set(prev);
       next.delete(activeFileId);

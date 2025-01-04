@@ -27,7 +27,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onChange }) => {
         block.id === blockId ? { ...block, ...updates } : block
       );
       onChange(newBlocks);
-      console.log("blocks:", blocks);
     },
     [blocks, onChange]
   );
@@ -141,8 +140,6 @@ const BlockEditor: React.FC<BlockEditorProps> = ({ blocks, onChange }) => {
     },
     [blocks, deleteBlock, splitBlock, setSelectedBlockId]
   );
-
-  console.log("blocks:", blocks);
 
   return (
     <div className={styles.blockEditor}>
