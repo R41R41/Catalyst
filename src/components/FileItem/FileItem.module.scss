@@ -1,17 +1,13 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .contextMenu {
   position: absolute;
-  @include themed() {
-    background: rgba(t(color-background-primary), 0.5);
-    border: 1px solid rgba(t(color-text-muted), 0.2);
-  }
+  background: rgba(var(--color-background-primary), 0.5);
+  border: 1px solid rgba(var(--color-text-muted), 0.2);
   border-radius: 4px;
   padding: 4px 0;
   z-index: 1000;
-  @include themed() {
-    box-shadow: 0 2px 5px t(color-shadow);
-  }
+  box-shadow: 0 2px 5px var(--color-shadow);
 
   button {
     display: block;
@@ -19,16 +15,12 @@
     padding: 8px 16px;
     border: none;
     background: none;
-    @include themed() {
-      color: t(color-text-primary);
-    }
+    color: var(--color-text-primary);
     text-align: left;
     cursor: pointer;
 
     &:hover {
-      @include themed() {
-        background-color: t(color-background-hover);
-      }
+      background-color: var(--color-background-hover);
     }
   }
 }
@@ -40,27 +32,23 @@
   cursor: pointer;
   user-select: none;
   height: 16px;
-  @include themed() {
-    color: t(color-text-primary);
+  color: var(--color-text-primary);
 
-    &.dirty {
-      color: t(color-text-dirty);
-    }
+  &.dirty {
+    color: var(--color-text-dirty);
+  }
 
-    &:hover {
-      background-color: t(color-background-hover);
-    }
+  &:hover {
+    background-color: var(--color-background-hover);
+  }
 
-    &.active {
-      background-color: t(color-background-active);
-    }
+  &.active {
+    background-color: var(--color-background-active);
   }
 
   &.dragging {
-    @include themed() {
-      background-color: t(color-background-dragging);
-      opacity: 0.8;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
+    background-color: var(--color-background-dragging);
+    opacity: 0.8;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }

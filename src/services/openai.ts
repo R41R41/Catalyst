@@ -1,10 +1,10 @@
 import OpenAI from "openai";
-import { Prompt } from "./promptApi";
+import { Prompt } from "./promptApi.js";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { FileData } from "../types/File";
+import { FileData } from "../types/File.js";
 
 const openai = new OpenAI({
-  apiKey: process.env.REACT_APP_OPENAI_API_KEY,
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
   dangerouslyAllowBrowser: true, // ローカル開発用
 });
 

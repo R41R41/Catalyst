@@ -1,4 +1,4 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .menuItem {
   width: 100%;
@@ -13,26 +13,18 @@
   align-items: center;
   gap: 8px;
 
-  @include themed() {
-    color: t(color-text-primary);
-  }
+  color: var(--color-text-primary);
 
   &:hover {
-    @include themed() {
-      background-color: t(color-background-hover);
-    }
+    background-color: var(--color-background-hover);
   }
 
   &.active {
-    @include themed() {
-      background-color: t(color-background-active);
-    }
+    background-color: var(--color-background-active);
   }
 
   &.dirty {
-    @include themed() {
-      color: t(color-text-dirty);
-    }
+    color: var(--color-text-dirty);
   }
 }
 

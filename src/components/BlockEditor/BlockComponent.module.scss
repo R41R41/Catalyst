@@ -8,15 +8,11 @@
   cursor: text;
 
   &:hover {
-    @include themed() {
-      background-color: t(color-background-hover);
-    }
+    background-color: var(--color-background-hover);
   }
 
   &.selected {
-    @include themed() {
-      background-color: t(color-background-active);
-    }
+    background-color: var(--color-background-active);
   }
 }
 
@@ -50,9 +46,7 @@
   font-family: monospace;
   padding: 1em;
   margin: 1em 0;
-  @include themed() {
-    background-color: t(color-background-secondary);
-  }
+  background-color: var(--color-background-secondary);
 }
 
 .paragraph {

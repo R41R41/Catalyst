@@ -1,4 +1,4 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .header {
   height: 48px;
@@ -6,18 +6,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  @include themed() {
-    background-color: t(color-background-secondary);
-    border-bottom: 1px solid t(color-border);
-  }
+  background-color: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .title {
   font-weight: bold;
   font-size: 16px;
-  @include themed() {
-    color: t(color-text-primary);
-  }
+  color: var(--color-text-primary);
 }
 
 .settingsButton {
@@ -29,10 +25,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  @include themed() {
-    color: t(color-text-primary);
-    &:hover {
-      background-color: t(color-background-hover);
-    }
+  color: var(--color-text-primary);
+
+  &:hover {
+    background-color: var(--color-background-hover);
   }
 }

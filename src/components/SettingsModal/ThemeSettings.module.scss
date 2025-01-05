@@ -1,13 +1,11 @@
-@import "@/styles/variables";
+@use "@/styles/variables" as vars;
 
 .themeSettings {
   padding: 20px;
 
   h2 {
     margin-bottom: 20px;
-    @include themed() {
-      color: t(color-text-primary);
-    }
+    color: var(--color-text-primary);
   }
 }
 
@@ -20,9 +18,7 @@
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    @include themed() {
-      color: t(color-text-primary);
-    }
+    color: var(--color-text-primary);
   }
 
   input[type="radio"] {

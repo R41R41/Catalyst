@@ -1,0 +1,48 @@
+.editor {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+  min-height: 200px;
+
+  .toolbar {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+
+    button {
+      margin-right: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+
+      &:hover {
+        background: #f5f5f5;
+      }
+    }
+  }
+
+  .editorBody {
+    // Draft.jsのデフォルトスタイルを上書き
+    :global {
+      .public-DraftEditor-content {
+        min-height: 150px;
+      }
+
+      .public-DraftStyleDefault-blockquote {
+        border-left: 5px solid #eee;
+        padding-left: 1rem;
+        margin: 1rem 0;
+        color: #666;
+      }
+
+      .public-DraftStyleDefault-pre {
+        background: #f5f5f5;
+        padding: 1rem;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+    }
+  }
+}

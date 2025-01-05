@@ -1,4 +1,4 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .overlay {
   position: fixed;
@@ -18,9 +18,7 @@
   height: 80%;
   display: flex;
   flex-direction: column;
-  @include themed() {
-    background-color: t(color-background-primary);
-  }
+  background-color: var(--color-background-primary);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -30,16 +28,12 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px 12px;
-  @include themed() {
-    background-color: t(color-background-secondary);
-    border-bottom: 1px solid t(color-border);
-  }
+  background-color: var(--color-background-secondary);
+  border-bottom: 1px solid var(--color-border);
 
   span {
     font-size: 16px;
-    @include themed() {
-      color: t(color-text-primary);
-    }
+    color: var(--color-text-primary);
   }
 }
 
@@ -49,14 +43,10 @@
   font-size: 24px;
   cursor: pointer;
   padding: 4px 8px;
-  @include themed() {
-    color: t(color-text-primary);
-  }
+  color: var(--color-text-primary);
 
   &:hover {
-    @include themed() {
-      color: t(color-text-secondary);
-    }
+    color: var(--color-text-secondary);
   }
 }
 
@@ -68,10 +58,8 @@
 
 .sidebar {
   width: 200px;
-  @include themed() {
-    background-color: t(color-background-secondary);
-    border-right: 1px solid t(color-border);
-  }
+  background-color: var(--color-background-secondary);
+  border-right: 1px solid var(--color-border);
 }
 
 .content {
@@ -94,10 +82,8 @@
     font-size: 14px;
     border: none;
     resize: none;
-    @include themed() {
-      background-color: t(color-background-primary);
-      color: t(color-text-primary);
-    }
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
 
     &:focus {
       outline: none;
@@ -107,14 +93,10 @@
 
 .promptPath {
   font-size: 16px;
-  @include themed() {
-    color: t(color-text-secondary);
-  }
+  color: var(--color-text-secondary);
   margin-bottom: 16px;
   padding-bottom: 8px;
-  @include themed() {
-    border-bottom: 1px solid t(color-border);
-  }
+  border-bottom: 1px solid var(--color-border);
 }
 
 .buttonContainer {
@@ -125,44 +107,32 @@
 .saveButton {
   height: 40px;
   padding: 8px 24px;
-  @include themed() {
-    background-color: t(color-button-primary);
-    color: t(color-text-primary);
-  }
+  background-color: var(--color-button-primary);
+  color: var(--color-text-primary);
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
 
   &:hover {
-    @include themed() {
-      background-color: t(color-button-primary-hover);
-    }
+    background-color: var(--color-button-primary-hover);
   }
 
   &:active {
-    @include themed() {
-      background-color: t(color-button-primary-active);
-    }
+    background-color: var(--color-button-primary-active);
   }
 
   &.disabled {
-    @include themed() {
-      background-color: t(color-button-disabled);
-      color: t(color-text-secondary);
-    }
+    background-color: var(--color-button-disabled);
+    color: var(--color-text-secondary);
     cursor: default;
 
     &:hover {
-      @include themed() {
-        background-color: t(color-button-disabled);
-      }
+      background-color: var(--color-button-disabled);
     }
 
     &:active {
-      @include themed() {
-        background-color: t(color-button-disabled);
-      }
+      background-color: var(--color-button-disabled);
     }
   }
 }
@@ -170,15 +140,13 @@
 .menuItem {
   padding: 12px 16px;
   cursor: pointer;
-  @include themed() {
-    color: t(color-text-primary);
+  color: var(--color-text-primary);
 
-    &:hover {
-      background-color: t(color-background-hover);
-    }
+  &:hover {
+    background-color: var(--color-background-hover);
+  }
 
-    &.active {
-      background-color: t(color-background-active);
-    }
+  &.active {
+    background-color: var(--color-background-active);
   }
 }

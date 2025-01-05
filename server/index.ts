@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
-import { Prompt } from "./models/Prompt";
-import scenarioRoutes from "./routes/scenarios";
-import settingRoutes from "./routes/settings";
-import characterRoutes from "./routes/characters";
-import promptRoutes from "./routes/prompts";
+import { Prompt } from "./models/Prompt.js";
+import scenarioRoutes from "./routes/scenarios.js";
+import settingRoutes from "./routes/settings.js";
+import characterRoutes from "./routes/characters.js";
+import promptRoutes from "./routes/prompts.js";
 
 const app = express();
 

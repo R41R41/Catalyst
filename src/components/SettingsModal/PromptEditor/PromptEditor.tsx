@@ -1,5 +1,5 @@
 import React from "react";
-import BaseEditor from "../../BaseEditor/BaseEditor";
+import BaseEditor from "../../BaseEditor/BaseEditor.js";
 import styles from "./PromptEditor.module.scss";
 
 interface PromptEditorProps {

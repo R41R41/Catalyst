@@ -1,12 +1,10 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .contextMenu {
   position: absolute;
-  @include themed() {
-    background: rgba(t(color-background-primary), 0.5);
-    border: 1px solid rgba(t(color-text-muted), 0.2);
-    box-shadow: 0 2px 5px t(color-shadow);
-  }
+  background: rgba(var(--color-background-primary), 0.5);
+  border: 1px solid rgba(var(--color-text-muted), 0.2);
+  box-shadow: 0 2px 5px var(--color-shadow);
   border-radius: 4px;
   padding: 4px 0;
   z-index: 1000;
@@ -20,11 +18,10 @@
     background: none;
     text-align: left;
     cursor: pointer;
-    @include themed() {
-      color: t(color-text-primary);
-      &:hover {
-        background-color: t(color-background-hover);
-      }
+    color: var(--color-text-primary);
+
+    &:hover {
+      background-color: var(--color-background-hover);
     }
   }
 }

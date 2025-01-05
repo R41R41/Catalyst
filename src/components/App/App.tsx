@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import Editor from "@/components/Editor/Editor";
+// import Editor from "@/components/Editor/Editor";
 import Editor2 from "@/components/Editor/Editor2";
+// import Editor3 from "@/components/Editor/Editor3";
 import Sidebar from "@/components/Sidebar/Sidebar";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
@@ -257,6 +258,10 @@ const App: React.FC = () => {
               onSave={handleSave}
               isDirty={dirtyFiles.has(activeFileId)}
             />
+            {/* <Editor3
+              content={activeFile?.content ?? ""}
+              onContentChange={handleContentChange}
+            /> */}
           </div>
         )}
         <SettingsModal

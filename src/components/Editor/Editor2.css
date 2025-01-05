@@ -15,3 +15,9 @@
   height: 100vh;
   border-radius: 0;
 }
+
+/* AIの補完テキスト用のカスタムクラス */
+.ai-block {
+  background-color: #ff0000 !important; /* より薄いグレー */
+  color: #cccccc !important; /* より薄いグレー */
+}

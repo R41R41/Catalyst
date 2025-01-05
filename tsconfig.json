@@ -1,19 +1,12 @@
 {
   "compilerOptions": {
-    "target": "es6",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "commonjs",
-    "jsx": "react",
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
-    }
-  },
-  "include": ["src", "src/services/api.ts", "src/types/scss.d.ts"]
+    },
+    "esModuleInterop": true,
+    "jsx": "react",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  }
 }

@@ -1,4 +1,4 @@
-const API_URL = `http://${process.env.REACT_APP_SERVER_IP_ADDRESS}:5000/api`;
+const API_URL = `http://${import.meta.env.VITE_SERVER_IP_ADDRESS}:5000/api`;
 
 export interface Prompt {
   id: string;

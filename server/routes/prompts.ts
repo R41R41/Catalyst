@@ -1,5 +1,5 @@
 import express from "express";
-import { Prompt } from "../models/Prompt";
+import { Prompt } from "../models/Prompt.js";
 
 const router = express.Router();
 

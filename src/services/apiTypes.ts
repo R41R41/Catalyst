@@ -4,4 +4,6 @@ export interface BaseFileData {
   content: string;
 }
 
-export const API_URL = `http://${process.env.REACT_APP_SERVER_IP_ADDRESS}:5000/api`;
+export const API_URL = `http://${
+  import.meta.env.VITE_SERVER_IP_ADDRESS
+}:5000/api`;

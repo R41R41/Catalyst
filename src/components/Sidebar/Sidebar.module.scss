@@ -1,17 +1,13 @@
-@import "@/styles/variables";
+@use "@/styles/variables";
 
 .sidebar {
   width: 200px;
   height: 100%;
-  @include themed() {
-    background-color: t(color-background-primary);
-    border-right: 1px solid t(color-border);
-  }
+  background-color: var(--color-background-primary);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  @include themed() {
-    color: t(color-text-primary);
-  }
+  color: var(--color-text-primary);
 }
 
 .footer {
@@ -22,16 +18,12 @@
 .promptButton {
   width: 100%;
   padding: 0.5rem;
-  @include themed() {
-    background-color: t(color-button-primary);
-    border: 1px solid t(color-button-primary);
-    color: t(color-text-primary);
-  }
+  background-color: var(--color-button-primary);
+  border: 1px solid var(--color-button-primary);
+  color: var(--color-text-primary);
   cursor: pointer;
 
   &:hover {
-    @include themed() {
-      background-color: t(color-button-primary-hover);
-    }
+    background-color: var(--color-button-primary-hover);
   }
 }

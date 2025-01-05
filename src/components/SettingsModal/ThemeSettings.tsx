@@ -1,6 +1,6 @@
 import React from "react";
 import { useTheme } from "@/contexts/ThemeContext";
-import styles from "./ThemeSettings.module.scss";
+import styles from "@/components/SettingsModal/ThemeSettings.module.scss";
 
 export const ThemeSettings: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
@@ -15,7 +15,7 @@ export const ThemeSettings: React.FC = () => {
             name="theme"
             value="light"
             checked={theme === "light"}
-            onChange={toggleTheme}
+            onChange={() => toggleTheme()}
           />
           ライトモード
         </label>
@@ -25,7 +25,7 @@ export const ThemeSettings: React.FC = () => {
             name="theme"
             value="dark"
             checked={theme === "dark"}
-            onChange={toggleTheme}
+            onChange={() => toggleTheme()}
           />
           ダークモード
         </label>
