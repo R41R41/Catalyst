@@ -39,6 +39,8 @@ interface EditorProps {
 	currentFileName: string;
 	onSave: () => void;
 	isDirty: boolean;
+	isAutoCompletionEnabled: boolean;
+	setIsAutoCompletionEnabled: (isAutoCompletionEnabled: boolean) => void;
 }
 const Editor: React.FC<EditorProps> = ({
 	content,
@@ -48,6 +50,8 @@ const Editor: React.FC<EditorProps> = ({
 	allFiles,
 	currentFileName,
 	onSave,
+	isAutoCompletionEnabled,
+	setIsAutoCompletionEnabled,
 }) => {
 	const schema = BlockNoteSchema.create({
 		inlineContentSpecs: {
@@ -65,6 +69,13 @@ const Editor: React.FC<EditorProps> = ({
 	const [isRAG, setIsRAG] = useState(false);
 
 	useEffect(() => {
+		console.log("isAutoCompletionEnabled", isAutoCompletionEnabled);
+		if (!isAutoCompletionEnabled) {
+			setIsLoading(false);
+		}
+	}, [isAutoCompletionEnabled]);
+
+	useEffect(() => {
 		const loadContent = async () => {
 			if (!editor || !currentFileName) return;
 			const blocks = await editor.tryParseMarkdownToBlocks(content);
@@ -75,7 +86,6 @@ const Editor: React.FC<EditorProps> = ({
 	}, [editor, currentFileName]);
 
 	async function aiCompletion(readCursor: boolean, isSetTimeout: boolean) {
-		setIsLoading(true);
 		if (!editor) return;
 		const document = editor.document;
 		const aiCompletionInlineContent = document.find((block) => {
@@ -91,6 +101,7 @@ const Editor: React.FC<EditorProps> = ({
 			return isAiCompletion;
 		});
 		if (aiCompletionInlineContent) return;
+		setIsLoading(true);
 
 		let inputText = "";
 		let referenceBlock: Block;
@@ -115,7 +126,10 @@ const Editor: React.FC<EditorProps> = ({
 		// 新しいタイマーをセット
 		timeoutRef.current = setTimeout(async () => {
 			try {
-				if (!inputText) return;
+				if (!inputText) {
+					setIsLoading(false);
+					return;
+				}
 				originalContentRef.current = inputText;
 				let relatedContents: string[] = [];
 				if (isRAG) {
@@ -134,6 +148,7 @@ const Editor: React.FC<EditorProps> = ({
 
 				if (!systemPrompt) {
 					console.error("System prompt not found");
+					setIsLoading(false);
 					return;
 				}
 
@@ -168,9 +183,10 @@ const Editor: React.FC<EditorProps> = ({
 				console.log("%c補完生成 終了", "color: green");
 			} catch (error) {
 				console.error("Completion error:", error);
+			} finally {
+				setIsLoading(false);
 			}
 		}, Timeout);
-		setIsLoading(false);
 	}
 
 	async function adoptAiCompletion(event: React.KeyboardEvent<HTMLDivElement>) {
@@ -243,7 +259,9 @@ const Editor: React.FC<EditorProps> = ({
 					}
 				}}
 				onChange={async () => {
-					await aiCompletion(true, true);
+					if (isAutoCompletionEnabled) {
+						await aiCompletion(true, true);
+					}
 				}}
 			>
 				<FormattingToolbarController
@@ -310,15 +328,27 @@ const Editor: React.FC<EditorProps> = ({
 				}}
 			>
 				補完生成
-				{!isLoading && <div className="spinner"></div>}
+				{isLoading && <div className="spinner"></div>}
 			</button>
-			<div className="RAG-Icon">
-				<Checkbox
-					checked={isRAG}
-					onChange={() => setIsRAG(!isRAG)}
-					style={{ marginLeft: "16px", fontSize: "16px", color: "white" }}
-				/>
-				他ファイル参照
+			<div className="button-container">
+				<div className="RAG-Icon">
+					<Checkbox
+						checked={isRAG}
+						onChange={() => setIsRAG(!isRAG)}
+						style={{ margin: "0 4px 0 0", fontSize: "16px", color: "white" }}
+					/>
+					他ファイル参照
+				</div>
+				<div className="auto-completion-button">
+					<Checkbox
+						checked={isAutoCompletionEnabled}
+						onChange={() =>
+							setIsAutoCompletionEnabled(!isAutoCompletionEnabled)
+						}
+						style={{ margin: "0 4px 0 0", fontSize: "16px", color: "white" }}
+					/>
+					自動補完
+				</div>
 			</div>
 		</div>
 	);
