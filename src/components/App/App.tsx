@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-// import Editor from "@/components/Editor/Editor";
-import Editor2 from "@/components/Editor/Editor2";
-// import Editor3 from "@/components/Editor/Editor3";
-import Sidebar from "@/components/Sidebar/Sidebar";
+import Editor from "@/components/Editor/Editor.js";
+import Sidebar from "@/components/Sidebar/Sidebar.js";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import {
@@ -21,12 +19,17 @@ import {
   updateCharacter,
   updateScenario,
   updateSetting,
-} from "@/services/api";
-import { FileData, FileCategory } from "@/types/File";
-import { fetchPrompts, updatePrompt, Prompt } from "@/services/promptApi";
-import SettingsModal from "@/components/SettingsModal/SettingsModal";
+} from "@/services/api.js";
+import { FileData, FileCategory } from "@/types/File.js";
+import {
+  fetchDefaultPrompts,
+  fetchPrompts,
+  updatePrompt,
+  Prompt,
+} from "@/services/promptApi.js";
+import SettingsModal from "@/components/SettingsModal/SettingsModal.js";
 import { v4 as uuidv4 } from "uuid";
-import { Header } from "@/components/Header/Header";
+import { Header } from "@/components/Header/Header.js";
 
 const App: React.FC = () => {
   const [files, setFiles] = useState<FileData[]>([]);
@@ -36,6 +39,12 @@ const App: React.FC = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
+  const [defaultPrompts, setDefaultPrompts] = useState<Prompt[]>([]);
+
+  const loadDefaultPrompts = async () => {
+    const defaultPrompts = await fetchDefaultPrompts();
+    setDefaultPrompts(defaultPrompts);
+  };
 
   useEffect(() => {
     const loadAllFiles = async () => {
@@ -75,6 +84,7 @@ const App: React.FC = () => {
       }
     };
 
+    loadDefaultPrompts();
     loadAllFiles();
   }, []);
 
@@ -238,17 +248,7 @@ const App: React.FC = () => {
               setFiles={setFiles}
               dirtyFiles={dirtyFiles}
             />
-            {/* <Editor
-              content={activeFile?.content ?? ""}
-              currentFileName={activeFile?.name ?? ""}
-              category={activeFile?.category ?? "scenario"}
-              onContentChange={handleContentChange}
-              systemPrompts={prompts}
-              allFiles={files}
-              onSave={handleSave}
-              isDirty={dirtyFiles.has(activeFileId)}
-            /> */}
-            <Editor2
+            <Editor
               content={activeFile?.content ?? ""}
               category={activeFile?.category ?? "scenario"}
               onContentChange={handleContentChange}
@@ -258,10 +258,6 @@ const App: React.FC = () => {
               onSave={handleSave}
               isDirty={dirtyFiles.has(activeFileId)}
             />
-            {/* <Editor3
-              content={activeFile?.content ?? ""}
-              onContentChange={handleContentChange}
-            /> */}
           </div>
         )}
         <SettingsModal
@@ -269,6 +265,7 @@ const App: React.FC = () => {
           onClose={() => setIsPromptModalOpen(false)}
           prompts={prompts}
           onSavePrompts={handleSavePrompts}
+          defaultPrompts={defaultPrompts}
         />
       </div>
     </DragDropContext>

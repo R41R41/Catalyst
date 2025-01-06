@@ -1,4 +1,5 @@
 import { createReactInlineContentSpec } from "@blocknote/react";
+import styles from "./Editor.module.scss";
 import React from "react";
 
 // カスタムインラインコンテンツの設定

@@ -1,5 +1,5 @@
 import React from "react";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme } from "@/contexts/ThemeContext.js";
 import styles from "@/components/SettingsModal/ThemeSettings.module.scss";
 
 export const ThemeSettings: React.FC = () => {

@@ -73,7 +73,7 @@ $theme-map: map.get($themes, "light");
   --color-text-dirty: #ffa000;
   --color-border: #e0e0e0;
   --color-shadow: rgba(0, 0, 0, 0.1);
-  --color-button-primary: #0078d4;
+  --color-button-primary: #007bff;
   --color-button-primary-hover: #2b95e9;
   --color-button-primary-active: #004c87;
   --color-button-disabled: #cccccc;
@@ -92,10 +92,42 @@ $theme-map: map.get($themes, "light");
   --color-text-dirty: #ffeb3b;
   --color-border: #474747;
   --color-shadow: rgba(0, 0, 0, 0.3);
-  --color-button-primary: #0078d4;
+  --color-button-primary: #007bff;
   --color-button-primary-hover: #2b95e9;
   --color-button-primary-active: #004c87;
   --color-button-disabled: #4d4d4d;
   --color-overlay: rgba(0, 0, 0, 0.7);
   --color-background-dragging: #333333;
 }
+
+// ボタンスタイルセット
+$button-styles: (
+  default: (
+    padding: 5px 15px,
+    border: 1px solid var(--color-button-primary),
+    border-radius: 5px,
+    background-color: var(--color-button-primary),
+    color: white,
+  ),
+  small: (
+    padding: 3px 10px,
+    border: 1px solid var(--color-button-primary),
+    border-radius: 3px,
+    background-color: var(--color-button-primary),
+    color: white,
+  ),
+  large: (
+    padding: 8px 20px,
+    border: 1px solid var(--color-button-primary),
+    border-radius: 8px,
+    background-color: var(--color-button-primary),
+    color: white,
+  ),
+  text: (
+    padding: 5px 10px,
+    border: none,
+    border-radius: 0,
+    background-color: transparent,
+    color: white,
+  ),
+);
