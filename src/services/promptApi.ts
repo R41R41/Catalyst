@@ -6,6 +6,19 @@ export interface Prompt {
   content: string;
 }
 
+export const fetchDefaultPrompts = async (): Promise<Prompt[]> => {
+  try {
+    const response = await fetch(`${API_URL}/prompts/default`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching default prompts:", error);
+    throw error;
+  }
+};
+
 export const fetchPrompts = async (): Promise<Prompt[]> => {
   try {
     const response = await fetch(`${API_URL}/prompts`);

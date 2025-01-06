@@ -6,6 +6,7 @@ interface PromptEditorProps {
   content: string;
   onContentChange: (content: string) => void;
   onSave: () => void;
+  onReset: () => void;
   isDirty: boolean;
 }
 
@@ -13,6 +14,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
   content,
   onContentChange,
   onSave,
+  onReset,
   isDirty,
 }) => {
   const handleContentChange = (newContent: string) => {
@@ -26,6 +28,7 @@ const PromptEditor: React.FC<PromptEditorProps> = ({
         category="prompt"
         onContentChange={(content) => handleContentChange(content)}
         onSave={onSave}
+        onReset={onReset}
         isDirty={isDirty}
       />
     </div>

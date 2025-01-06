@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useCallback } from "react";
-import { FileCategory } from "@/types/File";
+import { FileCategory } from "@/types/File.js";
 import styles from "./BaseEditor.module.scss";
 
 interface BaseEditorProps {
@@ -7,6 +7,7 @@ interface BaseEditorProps {
   category: FileCategory | "prompt";
   onContentChange: (content: string, category: FileCategory) => void;
   onSave: () => void;
+  onReset: () => void;
   isDirty: boolean;
 }
 
@@ -15,6 +16,7 @@ const BaseEditor: React.FC<BaseEditorProps> = ({
   category,
   onContentChange,
   onSave,
+  onReset,
   isDirty,
 }) => {
   const MAX_HISTORY = 100;
@@ -53,11 +55,47 @@ const BaseEditor: React.FC<BaseEditorProps> = ({
     tempContentRef.current = newContent;
   }, [category, onContentChange]);
 
+  const handleSave = useCallback(() => {
+    // 現在の内容を履歴に追加
+    const newHistory = [
+      ...historyRef.current.slice(0, historyIndexRef.current + 1),
+      tempContentRef.current,
+    ];
+    if (newHistory.length > MAX_HISTORY) {
+      newHistory.shift();
+    }
+    historyRef.current = newHistory;
+    historyIndexRef.current = Math.min(
+      historyRef.current.length - 1,
+      MAX_HISTORY - 1
+    );
+
+    onSave();
+  }, [onSave]);
+
+  const handleReset = useCallback(() => {
+    // リセット前の内容を履歴に追加
+    const newHistory = [
+      ...historyRef.current.slice(0, historyIndexRef.current + 1),
+      tempContentRef.current,
+    ];
+    if (newHistory.length > MAX_HISTORY) {
+      newHistory.shift();
+    }
+    historyRef.current = newHistory;
+    historyIndexRef.current = Math.min(
+      historyRef.current.length - 1,
+      MAX_HISTORY - 1
+    );
+
+    onReset();
+  }, [onReset]);
+
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        onSave();
+        handleSave();
       }
 
       // Enterキーで履歴を保存
@@ -109,7 +147,7 @@ const BaseEditor: React.FC<BaseEditorProps> = ({
     return () => {
       editor?.removeEventListener("keydown", handleKeyDown);
     };
-  }, [category, onContentChange, onSave]);
+  }, [category, onContentChange, handleSave]);
 
   return (
     <div className={styles.editor}>
@@ -119,6 +157,18 @@ const BaseEditor: React.FC<BaseEditorProps> = ({
         className={styles["content-editable"]}
         onInput={handleInput}
       />
+      <button
+        className={`${styles.saveButton} ${styles.button}`}
+        onClick={handleSave}
+      >
+        保存
+      </button>
+      <button
+        className={`${styles.resetButton} ${styles.button}`}
+        onClick={handleReset}
+      >
+        初期値に戻す
+      </button>
     </div>
   );
 };

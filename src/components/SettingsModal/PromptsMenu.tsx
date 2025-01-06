@@ -1,7 +1,7 @@
 import React from "react";
-import { CollapsibleMenu } from "../common/CollapsibleMenu";
-import { PROMPT_SECTIONS } from "./promptConstants";
-import { Prompt } from "@/services/promptApi";
+import { CollapsibleMenu } from "../common/CollapsibleMenu.js";
+import { PROMPT_SECTIONS } from "./promptConstants.js";
+import { Prompt } from "@/services/promptApi.js";
 
 interface PromptsMenuProps {
   activeTab: string;

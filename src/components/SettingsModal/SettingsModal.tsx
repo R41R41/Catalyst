@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import styles from "@/components/SettingsModal/SettingsModal.module.scss";
-import { Prompt } from "@/services/promptApi";
-import { PromptsMenu } from "@/components/SettingsModal/PromptsMenu";
-import { ThemeSettings } from "./ThemeSettings";
-import PromptEditor from "./PromptEditor/PromptEditor";
+import { Prompt } from "@/services/promptApi.js";
+import { PromptsMenu } from "@/components/SettingsModal/PromptsMenu.js";
+import { ThemeSettings } from "./ThemeSettings.js";
+import PromptEditor from "./PromptEditor/PromptEditor.js";
 
 type SettingsTab = "prompts" | "theme" | "openai";
 type SettingsSubTab = string | null;
@@ -12,6 +12,7 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   prompts: Prompt[];
+  defaultPrompts: Prompt[];
   onSavePrompts: (prompts: Prompt[]) => void;
 }
 
@@ -19,6 +20,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   prompts,
+  defaultPrompts,
   onSavePrompts,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>("prompts");
@@ -28,12 +30,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [dirtyPrompts, setDirtyPrompts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    setLocalPrompts(prompts);
-  }, [prompts]);
-
-  useEffect(() => {
     if (prompts.length > 0 && !activeSubTab) {
       setActiveSubTab(prompts[0].name);
+      setLocalPrompts(prompts);
     }
   }, [prompts, activeSubTab]);
 
@@ -58,6 +57,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     setDirtyPrompts(new Set());
   }, [localPrompts, onSavePrompts]);
 
+  const handleReset = useCallback(() => {
+    setLocalPrompts(defaultPrompts);
+    setDirtyPrompts(new Set());
+  }, [defaultPrompts]);
+
   const toggleTab = (tabId: string) => {
     setExpandedTabs((prev) =>
       prev.includes(tabId) ? prev.filter((t) => t !== tabId) : [...prev, tabId]
@@ -77,14 +81,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       case "prompts":
         const currentPrompt = localPrompts.find((p) => p.name === activeSubTab);
         return currentPrompt ? (
-          <div className={styles.promptEditor}>
-            <PromptEditor
-              content={currentPrompt.content}
-              onContentChange={(content) => handlePromptChange(content)}
-              onSave={handleSave}
-              isDirty={isCurrentPromptModified()}
-            />
-          </div>
+          <PromptEditor
+            content={currentPrompt.content}
+            onContentChange={(content) => handlePromptChange(content)}
+            onSave={handleSave}
+            onReset={handleReset}
+            isDirty={isCurrentPromptModified()}
+          />
         ) : null;
       case "theme":
         return <ThemeSettings />;

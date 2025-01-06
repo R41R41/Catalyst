@@ -1,157 +1,318 @@
-import React, { useRef, useState, useCallback, useEffect } from "react";
-import { getCompletion, findRelatedContents } from "@/services/openai";
-import { Prompt } from "@/services/promptApi";
-import { FileCategory, FileData } from "@/types/File";
-import BaseEditor from "../BaseEditor/BaseEditor";
-import styles from "./Editor.module.scss";
+import "@blocknote/core/fonts/inter.css";
+import {
+  useBlockNote,
+  useCreateBlockNote,
+  BasicTextStyleButton,
+  BlockTypeSelect,
+  ColorStyleButton,
+  CreateLinkButton,
+  FileCaptionButton,
+  FileReplaceButton,
+  FormattingToolbar,
+  FormattingToolbarController,
+  NestBlockButton,
+  TextAlignButton,
+  UnnestBlockButton,
+} from "@blocknote/react";
+import {
+  BlockNoteSchema,
+  defaultInlineContentSpecs,
+  Block,
+} from "@blocknote/core";
+import "@blocknote/mantine/style.css";
+import { BlockNoteView } from "@blocknote/mantine";
+import "./Editor.css";
+import React, { useEffect, useRef, useCallback, useState } from "react";
+import { getCompletion, findRelatedContents } from "@/services/openai.js";
+import { Prompt } from "@/services/promptApi.js";
+import { FileCategory, FileData } from "@/types/File.js";
+import completionTextSpec from "./AiCompletion.js";
+import { Checkbox } from "@mui/material";
+import { AiParaphrase } from "./AiParaphrase.js";
 
 interface EditorProps {
   content: string;
   category: FileCategory;
-  onContentChange: (content: string, category: FileCategory) => void;
+  onContentChange: (content: string) => void;
   systemPrompts: Prompt[];
   allFiles: FileData[];
   currentFileName: string;
   onSave: () => void;
   isDirty: boolean;
 }
-
 const Editor: React.FC<EditorProps> = ({
+  content,
   category,
   onContentChange,
-  currentFileName,
-  allFiles,
   systemPrompts,
-  ...restProps
+  allFiles,
+  currentFileName,
+  onSave,
 }) => {
-  const [isCompleted, setIsCompleted] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const completionRef = useRef<HTMLSpanElement | null>(null);
-  const originalContentRef = useRef<string>("");
-  const editorRef = useRef<HTMLDivElement>(null);
-
-  const insertCompletion = useCallback(async (completionText: string) => {
-    const baseEditorContent = editorRef.current?.querySelector(
-      '[contenteditable="true"]'
-    );
-    if (baseEditorContent) {
-      const selection = window.getSelection();
-      const range = selection?.getRangeAt(0) || document.createRange();
-
-      const span = document.createElement("span");
-      span.style.color = "gray";
-      span.textContent = completionText;
-      completionRef.current = span;
-
-      range.collapse(false);
-      range.insertNode(span);
-
-      if (selection) {
-        selection.removeAllRanges();
-        selection.addRange(range);
-      }
-    }
-  }, []);
-
-  const handleBaseEditorChange = useCallback(
-    async (content: string, _category: FileCategory) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      timeoutRef.current = setTimeout(async () => {
-        if (content) {
-          originalContentRef.current = content;
-
-          const relatedContents = await findRelatedContents(
-            currentFileName,
-            content,
-            allFiles
-          );
-          const systemPrompt = systemPrompts.find(
-            (prompt) => prompt.name === `predict_${category}`
-          );
-
-          if (!systemPrompt) {
-            console.error("System prompt not found");
-            return;
-          }
-
-          const result = await getCompletion(
-            currentFileName,
-            content,
-            systemPrompt,
-            relatedContents
-          );
-
-          if (result && content === originalContentRef.current) {
-            await insertCompletion(result);
-            setIsCompleted(true);
-          }
-        }
-      }, 1000);
-
-      onContentChange(content, _category);
+  const schema = BlockNoteSchema.create({
+    inlineContentSpecs: {
+      // Adds all default inline content.
+      ...defaultInlineContentSpecs,
+      // Adds the mention tag.
+      aiCompletion: completionTextSpec,
     },
-    [
-      category,
-      currentFileName,
-      systemPrompts,
-      allFiles,
-      insertCompletion,
-      onContentChange,
-    ]
-  );
+  });
+
+  const editor = useCreateBlockNote({ schema });
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const originalContentRef = useRef<string>("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRAG, setIsRAG] = useState(false);
 
   useEffect(() => {
-    const handleKeyDown = (e: Event) => {
-      if (isCompleted && e instanceof KeyboardEvent) {
-        if (e.key === "Tab") {
-          e.preventDefault();
-          if (completionRef.current) {
-            completionRef.current.style.color = "inherit";
-            const baseEditorContent = editorRef.current?.querySelector(
-              '[contenteditable="true"]'
-            );
-            const newContent = baseEditorContent?.textContent || "";
+    const loadContent = async () => {
+      if (!editor || !currentFileName) return;
+      const blocks = await editor.tryParseMarkdownToBlocks(content);
+      editor.replaceBlocks(editor.document, blocks);
+    };
+    loadContent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor, currentFileName]);
 
-            const inputEvent = new InputEvent("input", {
-              bubbles: true,
-              cancelable: true,
-            });
-            baseEditorContent?.dispatchEvent(inputEvent);
-
-            onContentChange(newContent, category);
-          }
-        } else {
-          if (completionRef.current) {
-            completionRef.current.remove();
-            completionRef.current = null;
-          }
+  async function aiCompletion(readCursor: boolean, isSetTimeout: boolean) {
+    setIsLoading(true);
+    if (!editor) return;
+    const document = editor.document;
+    const aiCompletionInlineContent = document.find((block) => {
+      const content = block.content;
+      let i = 0;
+      let isAiCompletion = false;
+      while (content[i] && !isAiCompletion) {
+        if (content[i].type === "aiCompletion") {
+          isAiCompletion = true;
         }
-        setIsCompleted(false);
+        i++;
       }
-    };
+      return isAiCompletion;
+    });
+    if (aiCompletionInlineContent) return;
 
-    const baseEditorContent = editorRef.current?.querySelector(
-      '[contenteditable="true"]'
-    );
-    baseEditorContent?.addEventListener("keydown", handleKeyDown);
+    let inputText = "";
+    let referenceBlock: Block;
+    let Timeout = 0;
+    if (isSetTimeout) {
+      Timeout = 3000;
+    }
+    if (readCursor) {
+      const cursorPosition = editor.getTextCursorPosition();
+      inputText = cursorPosition.block.content[0]?.text;
+      referenceBlock = cursorPosition.block as Block;
+    } else {
+      inputText = await editor.blocksToMarkdownLossy(editor.document);
+      referenceBlock = editor.document[editor.document.length - 1] as Block;
+    }
+    console.log("inputText", inputText);
+    console.log("referenceBlockContentText", referenceBlock.content[0]?.text);
 
-    return () => {
-      baseEditorContent?.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isCompleted, category, onContentChange]);
+    // 既存のタイマーをクリア
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+
+    // 新しいタイマーをセット
+    timeoutRef.current = setTimeout(async () => {
+      try {
+        if (!inputText) return;
+        originalContentRef.current = inputText;
+        let relatedContents: string[] = [];
+        if (isRAG) {
+          console.log("%cRAG 開始", "color: blue");
+          relatedContents = await findRelatedContents(
+            currentFileName,
+            inputText,
+            allFiles
+          );
+          console.log("%cRAG 終了", "color: green");
+        }
+
+        const systemPrompt = systemPrompts.find(
+          (prompt) => prompt.name === `predict_${category}`
+        );
+
+        if (!systemPrompt) {
+          console.error("System prompt not found");
+          return;
+        }
+
+        console.log("%c補完生成 開始", "color: blue");
+        const result = await getCompletion(
+          currentFileName,
+          inputText,
+          systemPrompt,
+          relatedContents
+        );
+
+        if (result && inputText === originalContentRef.current) {
+          editor.focus();
+          editor.insertBlocks(
+            [
+              {
+                type: "paragraph",
+                content: [
+                  {
+                    type: "aiCompletion",
+                    props: {
+                      text: result,
+                    },
+                  },
+                ],
+              },
+            ],
+            referenceBlock,
+            "after"
+          );
+        }
+        console.log("%c補完生成 終了", "color: green");
+      } catch (error) {
+        console.error("Completion error:", error);
+      }
+    }, Timeout);
+    setIsLoading(false);
+  }
+
+  async function adoptAiCompletion(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!editor) return;
+    const document = editor.document;
+    const aiCompletionBlock = document.find((block) => {
+      const content = block.content;
+      let i = 0;
+      let isAiCompletion = false;
+      while (content[i] && !isAiCompletion) {
+        if (content[i].type === "aiCompletion") {
+          isAiCompletion = true;
+        }
+        i++;
+      }
+      return isAiCompletion;
+    });
+    if (!aiCompletionBlock) return;
+    event.preventDefault();
+    const aiCompletionText = aiCompletionBlock.content[0].props.text;
+    editor.updateBlock(aiCompletionBlock, {
+      type: "paragraph",
+      content: aiCompletionText,
+    });
+  }
+
+  async function removeAiCompletion() {
+    if (!editor) return;
+    const document = editor.document;
+    const aiCompletionBlock = document.find((block) => {
+      const content = block.content;
+      let i = 0;
+      let isAiCompletion = false;
+      while (content[i] && !isAiCompletion) {
+        if (content[i].type === "aiCompletion") {
+          isAiCompletion = true;
+        }
+        i++;
+      }
+      return isAiCompletion;
+    });
+    if (!aiCompletionBlock) return;
+    editor.removeBlocks([aiCompletionBlock]);
+  }
 
   return (
-    <div className={styles.editor} ref={editorRef}>
-      <BaseEditor
-        content={restProps.content}
-        category={category}
-        onContentChange={handleBaseEditorChange}
-        onSave={restProps.onSave}
-        isDirty={restProps.isDirty}
-      />
+    <div className="editor">
+      <BlockNoteView
+        editor={editor}
+        formattingToolbar={false}
+        onKeyDown={(event) => {
+          if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+            event.preventDefault();
+            onSave();
+            return true;
+          }
+
+          // Enterキーが押されたときの処理
+          if (event.key === "Enter") {
+            adoptAiCompletion(event);
+          } else {
+            removeAiCompletion();
+          }
+        }}
+        onChange={async () => {
+          await aiCompletion(true, true);
+        }}
+      >
+        <FormattingToolbarController
+          formattingToolbar={() => (
+            <FormattingToolbar>
+              <BlockTypeSelect key={"blockTypeSelect"} />
+
+              {/* Extra button to toggle blue text & background */}
+              <AiParaphrase key={"customButton"} />
+
+              <FileCaptionButton key={"fileCaptionButton"} />
+              <FileReplaceButton key={"replaceFileButton"} />
+
+              <BasicTextStyleButton
+                basicTextStyle={"bold"}
+                key={"boldStyleButton"}
+              />
+              <BasicTextStyleButton
+                basicTextStyle={"italic"}
+                key={"italicStyleButton"}
+              />
+              <BasicTextStyleButton
+                basicTextStyle={"underline"}
+                key={"underlineStyleButton"}
+              />
+              <BasicTextStyleButton
+                basicTextStyle={"strike"}
+                key={"strikeStyleButton"}
+              />
+              {/* Extra button to toggle code styles */}
+              <BasicTextStyleButton
+                key={"codeStyleButton"}
+                basicTextStyle={"code"}
+              />
+
+              <TextAlignButton
+                textAlignment={"left"}
+                key={"textAlignLeftButton"}
+              />
+              <TextAlignButton
+                textAlignment={"center"}
+                key={"textAlignCenterButton"}
+              />
+              <TextAlignButton
+                textAlignment={"right"}
+                key={"textAlignRightButton"}
+              />
+
+              <ColorStyleButton key={"colorStyleButton"} />
+
+              <NestBlockButton key={"nestBlockButton"} />
+              <UnnestBlockButton key={"unnestBlockButton"} />
+
+              <CreateLinkButton key={"createLinkButton"} />
+            </FormattingToolbar>
+          )}
+        />
+      </BlockNoteView>
+      <button
+        className="completion-button"
+        onClick={() => {
+          removeAiCompletion();
+          aiCompletion(false, false);
+        }}
+      >
+        補完生成
+        {!isLoading && <div className="spinner"></div>}
+      </button>
+      <div className="RAG-Icon">
+        <Checkbox
+          checked={isRAG}
+          onChange={() => setIsRAG(!isRAG)}
+          style={{ marginLeft: "16px", fontSize: "16px", color: "white" }}
+        />
+        他ファイル参照
+      </div>
     </div>
   );
 };

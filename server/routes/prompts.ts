@@ -1,11 +1,20 @@
 import express from "express";
-import { Prompt } from "../models/Prompt.js";
+import { Prompt, defaultPrompts } from "../models/Prompt.js";
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
     const prompts = await Prompt.find();
+    res.json(prompts);
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/default", async (req, res) => {
+  try {
+    const prompts = await defaultPrompts.find();
     res.json(prompts);
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
