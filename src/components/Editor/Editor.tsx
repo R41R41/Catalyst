@@ -69,7 +69,6 @@ const Editor: React.FC<EditorProps> = ({
 	const [isRAG, setIsRAG] = useState(false);
 
 	useEffect(() => {
-		console.log("isAutoCompletionEnabled", isAutoCompletionEnabled);
 		if (!isAutoCompletionEnabled) {
 			setIsLoading(false);
 		}
@@ -117,8 +116,6 @@ const Editor: React.FC<EditorProps> = ({
 			inputText = await editor.blocksToMarkdownLossy(editor.document);
 			referenceBlock = editor.document[editor.document.length - 1] as Block;
 		}
-		console.log("inputText", inputText);
-		console.log("referenceBlockContentText", referenceBlock.content[0]?.text);
 
 		// 既存のタイマーをクリア
 		if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -240,7 +237,6 @@ const Editor: React.FC<EditorProps> = ({
 				editor={editor}
 				formattingToolbar={false}
 				onCompositionEnd={async (event) => {
-					console.log("Composition End");
 					const markdown = await editor.blocksToMarkdownLossy(editor.document);
 					onContentChange(markdown);
 				}}

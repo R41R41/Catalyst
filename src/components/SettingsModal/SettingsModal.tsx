@@ -26,12 +26,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 	const [activeTab, setActiveTab] = useState<SettingsTab>("prompts");
 	const [activeSubTab, setActiveSubTab] = useState<SettingsSubTab>(null);
 	const [expandedTabs, setExpandedTabs] = useState<string[]>(["prompts"]);
-	console.log("prompts", prompts);
 	const [localPrompts, setLocalPrompts] = useState<Prompt[]>(prompts);
 	const [dirtyPrompts, setDirtyPrompts] = useState<Set<string>>(new Set());
-
-	console.log("activeSubTab", activeSubTab);
-	console.log("localPrompts", localPrompts);
 
 	useEffect(() => {
 		if (prompts.length > 0 && !activeSubTab) {
