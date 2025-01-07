@@ -148,6 +148,10 @@ const App: React.FC = () => {
 		}
 	};
 
+	const handleAddFolder = async (category: FileCategory) => {
+		console.log("add folder", category);
+	};
+
 	const handleDeleteFile = async (fileId: string, category: FileCategory) => {
 		if (category === "scenario") {
 			await deleteScenario(fileId);
@@ -244,6 +248,7 @@ const App: React.FC = () => {
 							activeFileId={activeFileId}
 							onFileSelect={handleFileSelect}
 							onAddFile={handleAddFile}
+							onAddFolder={handleAddFolder}
 							onRenameFile={handleRenameFile}
 							onDeleteFile={handleDeleteFile}
 							setFiles={setFiles}

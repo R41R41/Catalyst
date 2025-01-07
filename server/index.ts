@@ -43,12 +43,15 @@ const initializePrompts = async () => {
 		// 重複するプロンプトを削除
 		await Prompt.deleteMany({ name: { $in: existingPromptNames } });
 
+		const existingPrompts2 = await Prompt.find();
+		const existingPromptNames2 = existingPrompts2.map((prompt) => prompt.name);
+
 		for (const file of files) {
 			if (file.endsWith(".txt")) {
 				const name = path.basename(file, ".txt");
 
 				// 既存のプロンプトに存在しない場合のみ追加
-				if (!existingPromptNames.includes(name)) {
+				if (!existingPromptNames2.includes(name)) {
 					const content = fs.readFileSync(path.join(promptsDir, file), "utf-8");
 					await Prompt.create({
 						id: new mongoose.Types.ObjectId().toString(),
