@@ -32,28 +32,32 @@ const initializePrompts = async () => {
 	try {
 		// プロンプトが既に存在するか確認
 		const existingPrompts = await Prompt.find();
-		if (existingPrompts.length > 0) {
-			console.log("Prompts already exist in DB");
-			return;
-		}
 
 		// default_promptsディレクトリからファイルを読み込む
 		const promptsDir = path.join(__dirname, "default_prompts");
 		const files = fs.readdirSync(promptsDir);
 
+		// 既存のプロンプト名を取得
+		const existingPromptNames = existingPrompts.map((prompt) => prompt.name);
+
+		// 重複するプロンプトを削除
+		await Prompt.deleteMany({ name: { $in: existingPromptNames } });
+
 		for (const file of files) {
 			if (file.endsWith(".txt")) {
-				const content = fs.readFileSync(path.join(promptsDir, file), "utf-8");
-				const name = path.basename(file, ".txt"); // 拡張子を除いたファイル名
+				const name = path.basename(file, ".txt");
 
-				await Prompt.create({
-					id: new mongoose.Types.ObjectId().toString(),
-					name,
-					content,
-				});
+				// 既存のプロンプトに存在しない場合のみ追加
+				if (!existingPromptNames.includes(name)) {
+					const content = fs.readFileSync(path.join(promptsDir, file), "utf-8");
+					await Prompt.create({
+						id: new mongoose.Types.ObjectId().toString(),
+						name,
+						content,
+					});
+				}
 			}
 		}
-
 		console.log("Prompts initialized successfully");
 	} catch (error) {
 		console.error("Failed to initialize prompts:", error);
@@ -63,9 +67,18 @@ const initializePrompts = async () => {
 // 初期プロンプトの読み込みと保存
 const initializeDefaultPrompts = async () => {
 	try {
+		// プロンプトが既に存在するか確認
+		const existingPrompts = await defaultPrompts.find();
+
 		// default_promptsディレクトリからファイルを読み込む
 		const promptsDir = path.join(__dirname, "default_prompts");
 		const files = fs.readdirSync(promptsDir);
+
+		// 既存のプロンプト名を取得
+		const existingPromptNames = existingPrompts.map((prompt) => prompt.name);
+
+		// 重複するプロンプトを削除
+		await defaultPrompts.deleteMany({ name: { $in: existingPromptNames } });
 
 		for (const file of files) {
 			if (file.endsWith(".txt")) {

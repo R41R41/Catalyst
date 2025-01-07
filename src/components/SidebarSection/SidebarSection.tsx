@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Droppable, Draggable } from "@hello-pangea/dnd";
 import { FileData, FileCategory } from "@/types/File.js";
 import { CollapsibleMenu } from "@/components/common/CollapsibleMenu.js";
@@ -20,6 +20,7 @@ interface SidebarSectionProps {
 	) => void;
 	onDeleteFile: (fileId: string, category: FileCategory) => void;
 	onAddFile: (category: FileCategory) => void;
+	onAddFolder: (category: FileCategory) => void;
 	dirtyFiles: Set<string>;
 }
 
@@ -34,6 +35,7 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
 	onRenameFile,
 	onDeleteFile,
 	onAddFile,
+	onAddFolder,
 	dirtyFiles,
 }) => {
 	const menuItem = {
@@ -65,12 +67,6 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
 						</Draggable>
 					))}
 					{provided.placeholder}
-					<button
-						className={styles.addButton}
-						onClick={() => onAddFile(category)}
-					>
-						+ 新規追加
-					</button>
 				</div>
 			)}
 		</Droppable>
@@ -84,6 +80,10 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({
 				expandedIds={isExpanded ? [category] : []}
 				onToggle={() => onToggle(category)}
 				onSelect={onFileSelect}
+				canCreateFile={true}
+				canCreateFolder={true}
+				onCreateFile={onAddFile}
+				onCreateFolder={onAddFolder}
 			>
 				{renderFileList()}
 			</CollapsibleMenu>

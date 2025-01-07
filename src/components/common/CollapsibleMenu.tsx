@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { ToggleIcon } from "./ToggleIcon.js";
 import styles from "./CollapsibleMenu.module.scss";
+import { ContextMenu } from "@/components/common/ContextMenu.js";
 
 interface MenuItemType {
 	id: string;
@@ -18,6 +19,10 @@ interface CollapsibleMenuProps {
 	onSelect: (id: string) => void;
 	children?: React.ReactNode;
 	dirtyItems?: Set<string>;
+	canCreateFolder?: boolean;
+	canCreateFile?: boolean;
+	onCreateFolder?: (id: string) => void;
+	onCreateFile?: (id: string) => void;
 }
 
 export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
@@ -29,11 +34,29 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
 	onSelect,
 	children,
 	dirtyItems = new Set(),
+	canCreateFolder = false,
+	canCreateFile = false,
+	onCreateFolder,
+	onCreateFile,
 }) => {
 	const hasChildren = item.children && item.children.length > 0;
 	const isActive = activeItemId === item.id;
 	const isExpanded = expandedIds.includes(item.id);
 	const isDirty = dirtyItems.has(item.id) || item.isDirty;
+
+	const [contextMenu, setContextMenu] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+
+	const handleContextMenu = (event: React.MouseEvent) => {
+		event.preventDefault();
+		setContextMenu({ x: event.clientX, y: event.clientY });
+	};
+
+	const handleCloseContextMenu = () => {
+		setContextMenu(null);
+	};
 
 	return (
 		<div className={styles.menuItem}>
@@ -49,6 +72,7 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
 						onSelect(item.id);
 					}
 				}}
+				onContextMenu={handleContextMenu}
 			>
 				{hasChildren && <ToggleIcon isExpanded={isExpanded} />}
 				<span>{item.name}</span>
@@ -68,10 +92,38 @@ export const CollapsibleMenu: React.FC<CollapsibleMenuProps> = ({
 								onToggle={onToggle}
 								onSelect={onSelect}
 								dirtyItems={dirtyItems}
+								canCreateFolder={canCreateFolder}
+								canCreateFile={canCreateFile}
+								onCreateFolder={onCreateFolder}
+								onCreateFile={onCreateFile}
 							/>
 						))}
 				</div>
 			}
+			{contextMenu && (
+				<ContextMenu
+					items={[
+						...(canCreateFile
+							? [
+									{
+										label: "ファイルを新規作成",
+										onClick: () => onCreateFile && onCreateFile(item.id),
+									},
+							  ]
+							: []),
+						...(canCreateFolder
+							? [
+									{
+										label: "フォルダを新規作成",
+										onClick: () => onCreateFolder && onCreateFolder(item.id),
+									},
+							  ]
+							: []),
+					]}
+					position={contextMenu}
+					onClose={handleCloseContextMenu}
+				/>
+			)}
 		</div>
 	);
 };

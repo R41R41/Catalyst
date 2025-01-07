@@ -28,7 +28,7 @@ import { Prompt } from "@/services/promptApi.js";
 import { FileCategory, FileData } from "@/types/File.js";
 import completionTextSpec from "./AiCompletion.js";
 import { Checkbox } from "@mui/material";
-import { AiParaphrase } from "./AiParaphrase.js";
+import { AiRewrite } from "./AiRewrite.js";
 
 interface EditorProps {
 	content: string;
@@ -270,7 +270,17 @@ const Editor: React.FC<EditorProps> = ({
 							<BlockTypeSelect key={"blockTypeSelect"} />
 
 							{/* Extra button to toggle blue text & background */}
-							<AiParaphrase key={"customButton"} />
+							<AiRewrite
+								key={"customButton"}
+								category={category}
+								systemPrompts={systemPrompts}
+								allFiles={allFiles}
+								currentFileName={currentFileName}
+								isRAG={isRAG}
+								removeAiCompletion={removeAiCompletion}
+								setIsLoading={setIsLoading}
+								originalContentRef={originalContentRef}
+							/>
 
 							<FileCaptionButton key={"fileCaptionButton"} />
 							<FileReplaceButton key={"replaceFileButton"} />
