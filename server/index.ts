@@ -90,6 +90,11 @@ wss.on("connection", (clientWs) => {
 		clientWs.send(JSON.stringify({ type: "audio_done" }));
 	});
 
+	openaiService.setUserTranscriptCallback((text) => {
+		console.log("\x1b[32mSending user transcript to client\x1b[0m", text);
+		clientWs.send(JSON.stringify({ type: "user_transcript", content: text }));
+	});
+
 	clientWs.on("close", () => {
 		console.log("\x1b[31mClient disconnected\x1b[0m");
 		openaiService.cleanup();

@@ -88,6 +88,9 @@ const App: React.FC = () => {
 		openaiService.textDoneCallback = () => {
 			setProcessingChatMessageIndex(chatMessages.length + 1);
 		};
+		openaiService.userTranscriptCallback = (text) => {
+			setChatMessages((prev) => [...prev, { content: text, sender: "User" }]);
+		};
 	}
 
 	const handleSendMessage = async (message: string) => {

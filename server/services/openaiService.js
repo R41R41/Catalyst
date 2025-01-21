@@ -9,6 +9,7 @@ export class OpenAIService {
     onTextDoneResponse;
     onAudioResponse;
     onAudioDoneResponse;
+    onUserTranscriptResponse = null;
     callbackTextQueue = [];
     callbackAudioQueue = [];
     isProcessingTextQueue = false;
@@ -16,12 +17,14 @@ export class OpenAIService {
     responseAudioBuffer = new Uint8Array(0);
     isTextResponseComplete = false;
     isAudioResponseComplete = false;
+    isUserTranscriptResponseComplete = true;
     constructor() {
         this.initialized = false; // 初期化状態を追跡
         this.onTextResponse = null; // テキストレスポンス用コールバック
         this.onTextDoneResponse = null; // テキスト完了用コールバック
         this.onAudioResponse = null; // 音声レスポンス用コールバック
         this.onAudioDoneResponse = null; // 音声完了用コールバック
+        this.onUserTranscriptResponse = null; // ユーザー音声レスポンス用コールバック
         this.responseAudioBuffer = new Uint8Array(0);
         this.initialize();
     }
@@ -30,6 +33,9 @@ export class OpenAIService {
             this.callbackTextQueue.push(text);
             this.processTextQueue(callback);
         };
+    }
+    setUserTranscriptCallback(callback) {
+        this.onUserTranscriptResponse = callback;
     }
     setAudioCallback(callback) {
         this.onAudioResponse = (audio) => {
@@ -40,8 +46,16 @@ export class OpenAIService {
     processTextQueue(callback) {
         if (this.isProcessingTextQueue)
             return;
+        if (!this.isUserTranscriptResponseComplete) {
+            console.log("\x1b[31mUser transcript not complete\x1b[0m");
+            return;
+        }
         this.isProcessingTextQueue = true;
         const processNext = () => {
+            if (!this.isUserTranscriptResponseComplete) {
+                this.isProcessingTextQueue = false;
+                return;
+            }
             if (this.callbackTextQueue.length > 0) {
                 const text = this.callbackTextQueue.shift();
                 if (text) {
@@ -69,7 +83,7 @@ export class OpenAIService {
                 if (audio) {
                     callback(audio);
                 }
-                setTimeout(processNext, 50);
+                setTimeout(processNext, 10);
             }
             else {
                 this.isProcessingAudioQueue = false;
@@ -112,7 +126,7 @@ export class OpenAIService {
                         input_audio_transcription: { model: "whisper-1" },
                         instructions: "あなたは優秀なアシスタントです。敬語を使って日本語で丁寧に答えてください。",
                         tool_choice: "none", // オプション：function callingを使用する場合に必要
-                        voice: "alloy", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
+                        voice: "sage", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
                         temperature: 0.8, // 0.6 から 1.2 の間
                         tools: [],
                     },
@@ -145,6 +159,10 @@ export class OpenAIService {
                             this.isTextResponseComplete = false;
                         }
                         break;
+                    case "input_audio_buffer.committed":
+                        console.log("\x1b[35mSpeech committed\x1b[0m");
+                        this.isUserTranscriptResponseComplete = false;
+                        break;
                     case "input_audio_buffer.append":
                         console.log("\x1b[32minput_audio_buffer.append\x1b[0m", data.audio.length);
                         break;
@@ -154,11 +172,6 @@ export class OpenAIService {
                     case "response.audio.delta":
                         console.log(`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`);
                         if (this.onAudioResponse) {
-                            // 文字列のまま結合
-                            // this.responseAudioBuffer = new Uint8Array([
-                            // 	...this.responseAudioBuffer,
-                            // 	...data.delta.split("").map((c: string) => c.charCodeAt(0)),
-                            // ]);
                             this.onAudioResponse(data.delta);
                         }
                         break;
@@ -170,11 +183,32 @@ export class OpenAIService {
                             this.isAudioResponseComplete = false;
                         }
                         break;
+                    case "response.audio_transcript.delta":
+                        console.log("\x1b[32mTranscript delta\x1b[0m");
+                        if (this.onTextResponse) {
+                            this.onTextResponse(data.delta);
+                        }
+                        break;
+                    case "response.audio_transcript.done":
+                        console.log("\x1b[34mTranscript done\x1b[0m");
+                        this.isTextResponseComplete = true;
+                        if (!this.isProcessingTextQueue && this.onTextDoneResponse) {
+                            this.onTextDoneResponse();
+                            this.isTextResponseComplete = false;
+                        }
+                        break;
+                    case "conversation.item.input_audio_transcription.completed":
+                        console.log("\x1b[34mTranscript completed\x1b[0m");
+                        this.isUserTranscriptResponseComplete = true;
+                        if (this.onUserTranscriptResponse && data.transcript) {
+                            this.onUserTranscriptResponse(data.transcript);
+                        }
+                        break;
                     case "error":
                         console.error(`\x1b[31mServer error: ${JSON.stringify(data)}\x1b[0m`);
                         break;
                     default:
-                        // console.info(`\x1b[33mUnhandled event type: ${data.type}\x1b[0m`);
+                        console.info(`\x1b[33mUnhandled event type: ${data.type}\x1b[0m`);
                         break;
                 }
             });
@@ -247,7 +281,7 @@ export class OpenAIService {
             const responseRequest = {
                 type: "response.create",
                 response: {
-                    modalities: ["audio", "text"], // テキストモダリティを指定
+                    modalities: ["audio", "text"],
                 },
             };
             this.ws.send(JSON.stringify(responseRequest));

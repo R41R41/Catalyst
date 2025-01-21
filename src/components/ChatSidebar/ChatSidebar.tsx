@@ -15,7 +15,7 @@ import { makeAutoObservable } from "mobx";
 class AudioQueueManager {
 	audioQueue: Int16Array[] = [];
 	isPlaying = false;
-	pitchFactor = 0.5;
+	pitchFactor = 0.6;
 
 	constructor() {
 		makeAutoObservable(this);

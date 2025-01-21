@@ -104,6 +104,7 @@ export class OpenAIService {
 	public textDoneCallback: (() => void) | null = null;
 	public audioCallback: ((data: string) => void) | null = null;
 	public audioDoneCallback: (() => void) | null = null;
+	public userTranscriptCallback: ((text: string) => void) | null = null;
 	private initialized: boolean = false;
 
 	constructor() {
@@ -135,6 +136,8 @@ export class OpenAIService {
 					`\x1b[32mReceived audio data: ${data.content.length} bytes\x1b[0m`
 				);
 				this.audioCallback?.(data.content);
+			} else if (data.type === "user_transcript") {
+				this.userTranscriptCallback?.(data.content);
 			}
 		};
 
