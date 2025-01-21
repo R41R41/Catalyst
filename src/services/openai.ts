@@ -130,6 +130,7 @@ export class OpenAIService {
 			} else if (data.type === "text") {
 				this.textCallback?.(data.content);
 			} else if (data.type === "audio") {
+				if (!data.content.length || data.content.length === 0) return;
 				console.log(
 					`\x1b[32mReceived audio data: ${data.content.length} bytes\x1b[0m`
 				);

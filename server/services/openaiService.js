@@ -1,6 +1,5 @@
 import WebSocket from "ws";
 import dotenv from "dotenv";
-import { Buffer } from "buffer";
 dotenv.config();
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 export class OpenAIService {
@@ -16,6 +15,7 @@ export class OpenAIService {
     isProcessingAudioQueue = false;
     responseAudioBuffer = new Uint8Array(0);
     isTextResponseComplete = false;
+    isAudioResponseComplete = false;
     constructor() {
         this.initialized = false; // 初期化状態を追跡
         this.onTextResponse = null; // テキストレスポンス用コールバック
@@ -69,10 +69,14 @@ export class OpenAIService {
                 if (audio) {
                     callback(audio);
                 }
-                setTimeout(processNext, 10); // 0.05秒ごとに次のコールバックを実行
+                setTimeout(processNext, 50);
             }
             else {
                 this.isProcessingAudioQueue = false;
+                if (this.isAudioResponseComplete && this.onAudioDoneResponse) {
+                    this.onAudioDoneResponse();
+                    this.isAudioResponseComplete = false;
+                }
             }
         };
         processNext();
@@ -126,7 +130,7 @@ export class OpenAIService {
                         console.log("\x1b[32mSession created\x1b[0m");
                         break;
                     case "response.created":
-                        console.log("\x1b[32mResponse creation started\x1b[0m");
+                        console.log("\x1b[35mResponse creation started\x1b[0m");
                         break;
                     case "response.text.delta":
                         if (this.onTextResponse) {
@@ -149,25 +153,29 @@ export class OpenAIService {
                         break;
                     case "response.audio.delta":
                         console.log(`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`);
-                        // const audioChunk = Buffer.from(data.delta, "base64");
-                        this.responseAudioBuffer = Buffer.concat([
-                            this.responseAudioBuffer,
-                            data.delta,
-                        ]);
+                        if (this.onAudioResponse) {
+                            // 文字列のまま結合
+                            // this.responseAudioBuffer = new Uint8Array([
+                            // 	...this.responseAudioBuffer,
+                            // 	...data.delta.split("").map((c: string) => c.charCodeAt(0)),
+                            // ]);
+                            this.onAudioResponse(data.delta);
+                        }
                         break;
                     case "response.audio.done":
                         console.log(`\x1b[32mResponse Audio completed: ${this.responseAudioBuffer.length} bytes\x1b[0m`);
-                        // 完了時にバッファ全体を送信
-                        if (this.onAudioResponse && this.responseAudioBuffer.length > 0) {
-                            this.onAudioResponse(this.responseAudioBuffer);
-                            this.responseAudioBuffer = new Uint8Array(0);
+                        this.isAudioResponseComplete = true;
+                        if (!this.isProcessingAudioQueue && this.onAudioDoneResponse) {
+                            this.onAudioDoneResponse();
+                            this.isAudioResponseComplete = false;
                         }
                         break;
                     case "error":
                         console.error(`\x1b[31mServer error: ${JSON.stringify(data)}\x1b[0m`);
                         break;
                     default:
-                        console.info(`\x1b[33mUnhandled event type: ${data.type}\x1b[0m`);
+                        // console.info(`\x1b[33mUnhandled event type: ${data.type}\x1b[0m`);
+                        break;
                 }
             });
             this.ws.on("error", (error) => {
@@ -239,7 +247,7 @@ export class OpenAIService {
             const responseRequest = {
                 type: "response.create",
                 response: {
-                    modalities: ["text"], // テキストモダリティを指定
+                    modalities: ["audio", "text"], // テキストモダリティを指定
                 },
             };
             this.ws.send(JSON.stringify(responseRequest));

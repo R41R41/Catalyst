@@ -66,7 +66,7 @@ wss.on("connection", (clientWs) => {
         clientWs.send(JSON.stringify({ type: "text_done" }));
     });
     openaiService.setAudioCallback((audio) => {
-        console.log("\x1b[32mSending audio to client\x1b[0m");
+        console.log("\x1b[32mSending audio to client\x1b[0m", audio.length);
         clientWs.send(JSON.stringify({ type: "audio", content: audio }));
     });
     openaiService.setAudioDoneCallback(() => {

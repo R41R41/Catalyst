@@ -67,7 +67,6 @@ const App: React.FC = () => {
 
 	if (openaiService) {
 		openaiService.textCallback = (text: string) => {
-			console.log("textCallback", text, processingChatMessageIndex);
 			if (processingChatMessageIndex > chatMessages.length) {
 				setChatMessages((prev) => {
 					return [...prev, { content: text, sender: "AI" }];
@@ -87,7 +86,6 @@ const App: React.FC = () => {
 			}
 		};
 		openaiService.textDoneCallback = () => {
-			console.log("textDoneCallback");
 			setProcessingChatMessageIndex(chatMessages.length + 1);
 		};
 	}
