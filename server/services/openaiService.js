@@ -46,10 +46,8 @@ export class OpenAIService {
     processTextQueue(callback) {
         if (this.isProcessingTextQueue)
             return;
-        if (!this.isUserTranscriptResponseComplete) {
-            console.log("\x1b[31mUser transcript not complete\x1b[0m");
+        if (!this.isUserTranscriptResponseComplete)
             return;
-        }
         this.isProcessingTextQueue = true;
         const processNext = () => {
             if (!this.isUserTranscriptResponseComplete) {
@@ -96,9 +94,11 @@ export class OpenAIService {
         processNext();
     }
     setTextDoneCallback(callback) {
+        this.callbackTextQueue = [];
         this.onTextDoneResponse = callback;
     }
     setAudioDoneCallback(callback) {
+        this.callbackAudioQueue = [];
         this.onAudioDoneResponse = callback;
     }
     async initialize() {
@@ -124,7 +124,7 @@ export class OpenAIService {
                         input_audio_format: "pcm16",
                         output_audio_format: "pcm16",
                         input_audio_transcription: { model: "whisper-1" },
-                        instructions: "あなたは優秀なアシスタントです。敬語を使って日本語で丁寧に答えてください。",
+                        instructions: "あなたは優秀なアシスタントAI「シャノン」です。敬語を使って日本語で丁寧に答えてください。",
                         tool_choice: "none", // オプション：function callingを使用する場合に必要
                         voice: "sage", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
                         temperature: 0.8, // 0.6 から 1.2 の間
