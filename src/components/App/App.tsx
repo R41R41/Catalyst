@@ -67,7 +67,12 @@ const App: React.FC = () => {
 
 	if (openaiService) {
 		openaiService.textCallback = (text: string) => {
-			if (processingChatMessageIndex === chatMessages.length) {
+			console.log("textCallback", text, processingChatMessageIndex);
+			if (processingChatMessageIndex > chatMessages.length) {
+				setChatMessages((prev) => {
+					return [...prev, { content: text, sender: "AI" }];
+				});
+			} else {
 				setChatMessages((prev) => {
 					const lastMessage = prev[prev.length - 1];
 					if (lastMessage && lastMessage.sender === "AI") {
@@ -79,13 +84,10 @@ const App: React.FC = () => {
 						return [...prev, { content: text, sender: "AI" }];
 					}
 				});
-			} else if (processingChatMessageIndex > chatMessages.length) {
-				setChatMessages((prev) => {
-					return [...prev, { content: text, sender: "AI" }];
-				});
 			}
 		};
 		openaiService.textDoneCallback = () => {
+			console.log("textDoneCallback");
 			setProcessingChatMessageIndex(chatMessages.length + 1);
 		};
 	}

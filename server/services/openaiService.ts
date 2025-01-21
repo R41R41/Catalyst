@@ -18,6 +18,8 @@ export class OpenAIService {
 	private isProcessingTextQueue: boolean = false;
 	private isProcessingAudioQueue: boolean = false;
 	private responseAudioBuffer: Uint8Array = new Uint8Array(0);
+	private isTextResponseComplete: boolean = false;
+
 	constructor() {
 		this.initialized = false; // 初期化状態を追跡
 		this.onTextResponse = null; // テキストレスポンス用コールバック
@@ -55,8 +57,9 @@ export class OpenAIService {
 				setTimeout(processNext, 50);
 			} else {
 				this.isProcessingTextQueue = false;
-				if (this.onTextDoneResponse) {
+				if (this.isTextResponseComplete && this.onTextDoneResponse) {
 					this.onTextDoneResponse();
+					this.isTextResponseComplete = false;
 				}
 			}
 		};
@@ -151,10 +154,12 @@ export class OpenAIService {
 						break;
 
 					case "response.text.done":
-						console.log("\x1b[32mText done\x1b[0m");
-						// if (this.onTextDoneResponse) {
-						// 	this.onTextDoneResponse();
-						// }
+						console.log("\x1b[34mText done\x1b[0m");
+						this.isTextResponseComplete = true;
+						if (!this.isProcessingTextQueue && this.onTextDoneResponse) {
+							this.onTextDoneResponse();
+							this.isTextResponseComplete = false;
+						}
 						break;
 
 					case "input_audio_buffer.append":
