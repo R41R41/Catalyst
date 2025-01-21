@@ -22,6 +22,9 @@ export class OpenAIService {
 	private isTextResponseComplete: boolean = false;
 	private isAudioResponseComplete: boolean = false;
 	private isUserTranscriptResponseComplete: boolean = true;
+	private isVadMode: boolean = false;
+	private noVadSessionConfig: any;
+	private vadSessionConfig: any;
 
 	constructor() {
 		this.initialized = false; // 初期化状態を追跡
@@ -32,6 +35,38 @@ export class OpenAIService {
 		this.onUserTranscriptResponse = null; // ユーザー音声レスポンス用コールバック
 		this.responseAudioBuffer = new Uint8Array(0);
 		this.initialize();
+		this.noVadSessionConfig = {
+			type: "session.update",
+			session: {
+				turn_detection: null,
+				modalities: ["text", "audio"],
+				input_audio_format: "pcm16",
+				output_audio_format: "pcm16",
+				input_audio_transcription: { model: "whisper-1" },
+				instructions:
+					"あなたは優秀なアシスタントAI「シャノン」です。敬語を使って日本語で丁寧に簡潔に答えてください。",
+				tool_choice: "none", // オプション：function callingを使用する場合に必要
+				voice: "sage", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
+				temperature: 0.8, // 0.6 から 1.2 の間
+				tools: [],
+			},
+		};
+		this.vadSessionConfig = {
+			type: "session.update",
+			session: {
+				turn_detection: { type: "server_vad" },
+				modalities: ["text", "audio"],
+				input_audio_format: "pcm16",
+				output_audio_format: "pcm16",
+				input_audio_transcription: { model: "whisper-1" },
+				instructions:
+					"あなたは優秀なアシスタントAI「シャノン」です。敬語を使って日本語で丁寧に簡潔に答えてください。",
+				tool_choice: "none", // オプション：function callingを使用する場合に必要
+				voice: "sage", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
+				temperature: 0.8, // 0.6 から 1.2 の間
+				tools: [],
+			},
+		};
 	}
 
 	setTextCallback(callback: (text: string) => void) {
@@ -132,24 +167,8 @@ export class OpenAIService {
 			this.ws.on("open", () => {
 				console.log("\x1b[32mConnected to OpenAI Realtime API\x1b[0m");
 				// セッション設定を送信
-				const sessionConfig = {
-					type: "session.update",
-					session: {
-						turn_detection: null,
-						modalities: ["text", "audio"],
-						input_audio_format: "pcm16",
-						output_audio_format: "pcm16",
-						input_audio_transcription: { model: "whisper-1" },
-						instructions:
-							"あなたは優秀なアシスタントAI「シャノン」です。敬語を使って日本語で丁寧に答えてください。",
-						tool_choice: "none", // オプション：function callingを使用する場合に必要
-						voice: "sage", // 利用可能なオプション: alloy, ash, ballad, coral, echo, sage, shimmer, verse
-						temperature: 0.8, // 0.6 から 1.2 の間
-						tools: [],
-					},
-				};
 				if (this.ws) {
-					this.ws.send(JSON.stringify(sessionConfig));
+					this.ws.send(JSON.stringify(this.noVadSessionConfig));
 				}
 				this.initialized = true;
 				resolve(true);
@@ -161,6 +180,10 @@ export class OpenAIService {
 				switch (data.type) {
 					case "session.created":
 						console.log("\x1b[32mSession created\x1b[0m");
+						break;
+
+					case "session.updated":
+						console.log("\x1b[33mSession updated\x1b[0m");
 						break;
 
 					case "response.created":
@@ -188,10 +211,10 @@ export class OpenAIService {
 						break;
 
 					case "input_audio_buffer.append":
-						console.log(
-							"\x1b[32minput_audio_buffer.append\x1b[0m",
-							data.audio.length
-						);
+						// console.log(
+						// 	"\x1b[32minput_audio_buffer.append\x1b[0m",
+						// 	data.audio.length
+						// );
 						break;
 
 					case "input_audio_buffer.debug":
@@ -205,9 +228,9 @@ export class OpenAIService {
 						break;
 
 					case "response.audio.delta":
-						console.log(
-							`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`
-						);
+						// console.log(
+						// 	`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`
+						// );
 						if (this.onAudioResponse) {
 							this.onAudioResponse(data.delta);
 						}
@@ -225,7 +248,7 @@ export class OpenAIService {
 						break;
 
 					case "response.audio_transcript.delta":
-						console.log("\x1b[32mTranscript delta\x1b[0m");
+						// console.log("\x1b[32mTranscript delta\x1b[0m");
 						if (this.onTextResponse) {
 							this.onTextResponse(data.delta);
 						}
@@ -337,6 +360,19 @@ export class OpenAIService {
 				},
 			};
 			this.ws.send(JSON.stringify(responseRequest));
+		}
+	}
+
+	async vadModeChange(data: string) {
+		if (this.ws) {
+			this.isVadMode = data === "true";
+			if (this.isVadMode) {
+				console.log("\x1b[32mVAD mode change: true\x1b[0m");
+				this.ws.send(JSON.stringify(this.vadSessionConfig));
+			} else {
+				console.log("\x1b[32mVAD mode change: false\x1b[0m");
+				this.ws.send(JSON.stringify(this.noVadSessionConfig));
+			}
 		}
 	}
 

@@ -18,6 +18,7 @@ export class OpenAIService {
     isTextResponseComplete = false;
     isAudioResponseComplete = false;
     isUserTranscriptResponseComplete = true;
+    isVadMode = false;
     constructor() {
         this.initialized = false; // 初期化状態を追跡
         this.onTextResponse = null; // テキストレスポンス用コールバック
@@ -143,6 +144,9 @@ export class OpenAIService {
                     case "session.created":
                         console.log("\x1b[32mSession created\x1b[0m");
                         break;
+                    case "session.updated":
+                        console.log("\x1b[33mSession updated\x1b[0m");
+                        break;
                     case "response.created":
                         console.log("\x1b[35mResponse creation started\x1b[0m");
                         break;
@@ -164,13 +168,18 @@ export class OpenAIService {
                         this.isUserTranscriptResponseComplete = false;
                         break;
                     case "input_audio_buffer.append":
-                        console.log("\x1b[32minput_audio_buffer.append\x1b[0m", data.audio.length);
+                        // console.log(
+                        // 	"\x1b[32minput_audio_buffer.append\x1b[0m",
+                        // 	data.audio.length
+                        // );
                         break;
                     case "input_audio_buffer.debug":
                         console.log(`\x1b[32mCurrent OpenAI buffer state: ${JSON.stringify(data, null, 2)}\x1b[0m`);
                         break;
                     case "response.audio.delta":
-                        console.log(`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`);
+                        // console.log(
+                        // 	`\x1b[32mAudio delta received: ${data.delta.length} bytes\x1b[0m`
+                        // );
                         if (this.onAudioResponse) {
                             this.onAudioResponse(data.delta);
                         }
@@ -184,7 +193,7 @@ export class OpenAIService {
                         }
                         break;
                     case "response.audio_transcript.delta":
-                        console.log("\x1b[32mTranscript delta\x1b[0m");
+                        // console.log("\x1b[32mTranscript delta\x1b[0m");
                         if (this.onTextResponse) {
                             this.onTextResponse(data.delta);
                         }
@@ -285,6 +294,27 @@ export class OpenAIService {
                 },
             };
             this.ws.send(JSON.stringify(responseRequest));
+        }
+    }
+    async vadModeChange(data) {
+        if (this.ws) {
+            this.isVadMode = data === "true";
+            if (this.isVadMode) {
+                console.log("\x1b[32mVAD mode change: true\x1b[0m");
+                const vadModeMessage = {
+                    type: "session.update",
+                    session: { turn_detection: { type: "server_vad" } },
+                };
+                this.ws.send(JSON.stringify(vadModeMessage));
+            }
+            else {
+                console.log("\x1b[32mVAD mode change: false\x1b[0m");
+                const vadModeMessage = {
+                    type: "session.update",
+                    session: { turn_detection: null },
+                };
+                this.ws.send(JSON.stringify(vadModeMessage));
+            }
         }
     }
     cleanup() {

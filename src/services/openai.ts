@@ -194,6 +194,19 @@ export class OpenAIService {
 		});
 		this.ws.send(messageData);
 	}
+
+	async vadModeChange(data: boolean) {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+			console.error("\x1b[31mWebSocket is not open\x1b[0m");
+			return;
+		}
+
+		const messageData = JSON.stringify({
+			type: "vad_mode_change",
+			content: data.toString(),
+		});
+		this.ws.send(messageData);
+	}
 }
 
 export default OpenAIService;

@@ -87,6 +87,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 	const [isRecording, setIsRecording] = useState(false);
 	const processorRef = useRef<ScriptProcessorNode | null>(null);
 	const audioQueueManager = useRef(new AudioQueueManager());
+	const [isVadMode, setIsVadMode] = useState(false);
 
 	useEffect(() => {
 		const latestMessage = messages[messages.length - 1];
@@ -161,6 +162,14 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 		}
 	};
 
+	const stopRecordingWithoutCommit = () => {
+		setIsRecording(false);
+		if (processorRef.current) {
+			processorRef.current.disconnect();
+			processorRef.current = null;
+		}
+	};
+
 	const convertFloat32ToInt16 = (buffer: Float32Array): ArrayBuffer => {
 		let l = buffer.length;
 		const buf = new Int16Array(l);
@@ -173,6 +182,16 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 	const handlePushToTalkToggle = () => {
 		if (isRecording) {
 			stopRecording();
+		} else {
+			startRecording();
+		}
+	};
+
+	const handleVadModeChange = () => {
+		openaiService?.vadModeChange(!isVadMode);
+		setIsVadMode(!isVadMode);
+		if (isRecording) {
+			stopRecordingWithoutCommit();
 		} else {
 			startRecording();
 		}
@@ -214,13 +233,19 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({
 			</MainContainer>
 			<div className="push-to-talk-button-container">
 				<button
-					onMouseDown={handlePushToTalkToggle}
-					onMouseUp={handlePushToTalkToggle}
-					// onClick={playTestSound}
+					onMouseDown={isVadMode ? null : handlePushToTalkToggle}
+					onMouseUp={isVadMode ? null : handlePushToTalkToggle}
 					className="push-to-talk-button"
+					style={{
+						backgroundColor: isRecording || isVadMode ? "#666" : "#444",
+					}}
 				>
-					{isRecording ? "録音中..." : "録音開始"}
+					{isRecording || isVadMode ? "音声認識中..." : "押下で音声入力"}
 				</button>
+				<div
+					className={`recording-indicator ${isVadMode ? "active" : ""}`}
+					onClick={handleVadModeChange}
+				/>
 			</div>
 		</div>
 	);

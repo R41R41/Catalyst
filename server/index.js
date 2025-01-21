@@ -38,18 +38,16 @@ wss.on("connection", (clientWs) => {
         try {
             const parsedMessage = await JSON.parse(message.toString());
             if (parsedMessage.type === "text") {
-                console.log("\x1b[32mReceived text message:\x1b[0m", parsedMessage.content);
-                // テキストメッセージの処理
                 await openaiService.processTextInput(parsedMessage.content);
             }
             else if (parsedMessage.type === "audio_append") {
-                console.log("\x1b[32mReceived audio_append message:\x1b[0m");
-                // 音声データの処理
                 await openaiService.processVoiceInput(parsedMessage.content);
             }
             else if (parsedMessage.type === "audio_commit") {
-                console.log("\x1b[34mReceived audio_commit message:\x1b[0m");
                 await openaiService.commitAudioBuffer();
+            }
+            else if (parsedMessage.type === "vad_mode_change") {
+                await openaiService.vadModeChange(parsedMessage.content);
             }
         }
         catch (error) {
