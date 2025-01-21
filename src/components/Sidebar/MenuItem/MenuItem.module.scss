@@ -1,0 +1,54 @@
+@use "@/styles/variables";
+
+.itemWrapper {
+	background-color: var(--color-background-secondary);
+	overflow: hidden;
+	// transition: height 0.3s ease;
+	// opacity: 0;
+
+	&.expanded {
+		height: 96px;
+		opacity: 1;
+	}
+
+	&.dragging {
+		background-color: var(--color-background-dragging);
+		opacity: 0.8;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+	}
+
+	.item {
+		height: 16px;
+		padding: 8px 8px 8px 8px;
+		cursor: pointer;
+		user-select: none;
+		font-size: 10px;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		color: var(--color-text-primary);
+
+		&:hover {
+			background-color: var(--color-background-hover);
+		}
+
+		&.active {
+			background-color: var(--color-background-active);
+		}
+
+		.itemIcon {
+			width: 16px;
+			height: 16px;
+			margin-right: 8px;
+			color: var(--color-text-primary);
+		}
+
+		.itemName {
+			width: 100%;
+		}
+	}
+
+	.children {
+		background-color: red;
+	}
+}

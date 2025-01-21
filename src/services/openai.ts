@@ -1,53 +1,51 @@
 import OpenAI from "openai";
-import { Prompt } from "./promptApi.js";
+import { PromptType, FlattenedItem } from "@/types/CommonTypes.js";
 import { ChatCompletionMessageParam } from "openai/resources/chat/completions";
-import { FileData } from "../types/File.js";
+import logger from "@/utils/logger.js";
+import { WS_URL } from "@/services/apiTypes.js";
+
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 const openai = new OpenAI({
-	apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+	apiKey: OPENAI_API_KEY,
 	dangerouslyAllowBrowser: true, // ローカル開発用
 });
 
-export const getCompletion = async (
-	currentFileName: string,
+export async function getCompletion(
 	prompt: string,
-	systemPrompt: Prompt,
+	systemPrompt: PromptType,
 	relatedContents: string[]
-) => {
+): Promise<string | null> {
 	try {
-		// システムプロンプトを結合
 		const systemContent = systemPrompt.content;
-
-		// 関連コンテンツを含めたメッセージを作成
-		const messages = [
+		const messages: ChatCompletionMessageParam[] = [
 			{
 				role: "system",
 				content: systemContent,
 			},
-			// 関連コンテンツを追加
 			...relatedContents.map((content) => ({
 				role: "system" as const,
 				content: `参考になりそうな情報:\n${content}`,
 			})),
 			{
 				role: "user",
-				content: currentFileName + "\n" + prompt,
+				content: prompt,
 			},
 		];
 
 		const completion = await openai.chat.completions.create({
-			messages: messages as ChatCompletionMessageParam[],
+			messages: messages,
 			model: "gpt-4o-mini",
 			max_tokens: 100,
 		});
 		return completion.choices[0].message.content;
 	} catch (error) {
-		console.error("Error:", error);
+		logger.error("Error getting completion:", error);
 		return null;
 	}
-};
+}
 
-export const getEmbedding = async (text: string) => {
+async function getEmbedding(text: string): Promise<number[] | null> {
 	try {
 		const response = await openai.embeddings.create({
 			model: "text-embedding-3-small",
@@ -58,27 +56,27 @@ export const getEmbedding = async (text: string) => {
 		console.error("Error getting embedding:", error);
 		return null;
 	}
-};
+}
 
-const cosineSimilarity = (vec1: number[], vec2: number[]): number => {
+function cosineSimilarity(vec1: number[], vec2: number[]): number {
 	const dotProduct = vec1.reduce((acc, val, i) => acc + val * vec2[i], 0);
 	const norm1 = Math.sqrt(vec1.reduce((acc, val) => acc + val * val, 0));
 	const norm2 = Math.sqrt(vec2.reduce((acc, val) => acc + val * val, 0));
 	return dotProduct / (norm1 * norm2);
-};
+}
 
-export const findRelatedContents = async (
+export async function findRelatedContents(
 	currentFileName: string,
 	currentContent: string,
-	allFiles: FileData[]
-): Promise<string[]> => {
+	files: FlattenedItem[]
+): Promise<string[]> {
 	const currentEmbedding = await getEmbedding(
 		currentFileName + "\n" + currentContent
 	);
 	if (!currentEmbedding) return [];
 
 	const similarities = await Promise.all(
-		allFiles
+		files
 			.filter((file) => file.name !== currentFileName)
 			.map(async (file) => {
 				const embedding = await getEmbedding(file.name + "\n" + file.content);
@@ -98,6 +96,100 @@ export const findRelatedContents = async (
 		.sort((a, b) => b.similarity - a.similarity)
 		.slice(0, 3)
 		.map((item) => item.content);
-};
+}
 
-export default openai;
+export class OpenAIService {
+	private ws: WebSocket | null = null;
+	public textCallback: ((text: string) => void) | null = null;
+	public textDoneCallback: (() => void) | null = null;
+	public audioCallback: ((data: string) => void) | null = null;
+	public audioDoneCallback: (() => void) | null = null;
+	private initialized: boolean = false;
+
+	constructor() {
+		this.initialize();
+	}
+
+	async initialize() {
+		if (this.initialized) return;
+		this.initialized = true;
+		console.log("\x1b[32minitialize\x1b[0m");
+
+		this.ws = new WebSocket(WS_URL);
+
+		this.ws.onopen = () => {
+			console.log("\x1b[32mConnected to server\x1b[0m");
+		};
+
+		this.ws.onmessage = (event) => {
+			const data = JSON.parse(event.data);
+			if (data.type === "text_done") {
+				this.textDoneCallback?.();
+			} else if (data.type === "audio_done") {
+				this.audioDoneCallback?.();
+			} else if (data.type === "text") {
+				this.textCallback?.(data.content);
+			} else if (data.type === "audio") {
+				console.log(
+					`\x1b[32mReceived audio data: ${data.content.length} bytes\x1b[0m`
+				);
+				this.audioCallback?.(data.content);
+			}
+		};
+
+		this.ws.onerror = (error) => {
+			console.error("\x1b[31mWebSocket error:\x1b[0m", error);
+		};
+
+		this.ws.onclose = () => {
+			console.log("\x1b[31mWebSocket connection closed\x1b[0m");
+			this.ws = null;
+		};
+	}
+
+	async sendMessage(message: string) {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+			console.error("\x1b[31mWebSocket is not open\x1b[0m");
+			return;
+		}
+
+		const messageData = JSON.stringify({
+			type: "text",
+			content: message,
+		});
+
+		console.log("\x1b[32msendMessage\x1b[0m", message);
+		this.ws.send(messageData);
+	}
+
+	async sendVoiceData(data: Blob) {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+			console.error("\x1b[31mWebSocket is not open\x1b[0m");
+			return;
+		}
+		const arrayBuffer = await data.arrayBuffer();
+		const base64String = btoa(
+			String.fromCharCode(...new Uint8Array(arrayBuffer))
+		);
+		const messageData = JSON.stringify({
+			type: "audio_append",
+			content: base64String,
+		});
+		console.log("\x1b[32msendVoiceData\x1b[0m", base64String.length);
+		this.ws.send(messageData);
+	}
+
+	async commitAudioBuffer() {
+		if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+			console.error("\x1b[31mWebSocket is not open\x1b[0m");
+			return;
+		}
+
+		const messageData = JSON.stringify({
+			type: "audio_commit",
+		});
+		this.ws.send(messageData);
+	}
+}
+
+export default OpenAIService;

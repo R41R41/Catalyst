@@ -1,0 +1,11 @@
+@use "@/styles/variables";
+
+.apiSettingsPage {
+	background-color: var(--color-background-primary);
+}
+
+.apiOption {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}

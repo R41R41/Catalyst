@@ -1,282 +1,387 @@
 import React, { useState, useEffect, useCallback } from "react";
+import ChatSidebar from "@/components/ChatSidebar/ChatSidebar.js";
+import OpenAIService from "@/services/openai.js";
 import Editor from "@/components/Editor/Editor.js";
 import Sidebar from "@/components/Sidebar/Sidebar.js";
 import styles from "./App.module.scss";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import {
-	createCharacter,
-	createScenario,
-	createSetting,
-	deleteCharacter,
-	deleteScenario,
-	deleteSetting,
-	fetchCharacters,
-	fetchScenarios,
-	fetchSettings,
-	renameCharacter,
-	renameScenario,
-	renameSetting,
-	updateCharacter,
-	updateScenario,
-	updateSetting,
+	createFile,
+	deleteFile,
+	fetchFiles,
+	updateFileName,
+	updateFileContent,
+	updateAllFiles,
+	deleteAllFiles,
 } from "@/services/api.js";
-import { FileData, FileCategory } from "@/types/File.js";
+import {
+	TreeItem,
+	PromptType,
+	FlattenedItem,
+	TreeItems,
+} from "@/types/CommonTypes.js";
 import {
 	fetchDefaultPrompts,
 	fetchPrompts,
 	updatePrompt,
-	Prompt,
-} from "@/services/promptApi.js";
-import SettingsModal from "@/components/SettingsModal/SettingsModal.js";
+} from "@/services/prompts.js";
+import SettingsModal from "@/components/SettingsModal/SettingsModal/SettingsModal.js";
 import { v4 as uuidv4 } from "uuid";
 import { Header } from "@/components/Header/Header.js";
+import { ContextMenu } from "@/components/common/ContextMenu.js";
 
 const App: React.FC = () => {
-	const [files, setFiles] = useState<FileData[]>([]);
-	const [activeFileId, setActiveFileId] = useState<string>("");
 	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
-	const [prompts, setPrompts] = useState<Prompt[]>([]);
-	const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
-	const [dirtyFiles, setDirtyFiles] = useState<Set<string>>(new Set());
-	const [defaultPrompts, setDefaultPrompts] = useState<Prompt[]>([]);
+	const [loadingErrors, setLoadingErrors] = useState<string[]>([]);
+	// 修正：複数エディタウィンドウに対応
+	const [treeItems, setTreeItems] = useState<TreeItem[]>([]);
+	const [files, setFiles] = useState<FlattenedItem[]>([]);
+	const [prompts, setPrompts] = useState<PromptType[]>([]);
+	const [defaultPrompts, setDefaultPrompts] = useState<PromptType[]>([]);
+	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isAutoCompletionEnabled, setIsAutoCompletionEnabled] = useState(false);
+	const [contextMenuPosition, setContextMenuPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const [contextMenuItems, setContextMenuItems] = useState<
+		{
+			label: string;
+			onClick: () => void;
+		}[]
+	>([]);
+	const [chatMessages, setChatMessages] = useState<
+		{ content: string; sender: string }[]
+	>([]);
+	const [processingChatMessageIndex, setProcessingChatMessageIndex] =
+		useState<number>(0);
+	const [openaiService, setOpenaiService] = useState<OpenAIService | null>(
+		null
+	);
 
-	const loadDefaultPrompts = async () => {
-		const defaultPrompts = await fetchDefaultPrompts();
-		setDefaultPrompts(defaultPrompts);
+	useEffect(() => {
+		if (!openaiService) {
+			setOpenaiService(new OpenAIService());
+		}
+	}, []);
+
+	if (openaiService) {
+		openaiService.textCallback = (text: string) => {
+			if (processingChatMessageIndex === chatMessages.length) {
+				setChatMessages((prev) => {
+					const lastMessage = prev[prev.length - 1];
+					if (lastMessage && lastMessage.sender === "AI") {
+						return [
+							...prev.slice(0, -1),
+							{ content: lastMessage.content + text, sender: "AI" },
+						];
+					} else {
+						return [...prev, { content: text, sender: "AI" }];
+					}
+				});
+			} else if (processingChatMessageIndex > chatMessages.length) {
+				setChatMessages((prev) => {
+					return [...prev, { content: text, sender: "AI" }];
+				});
+			}
+		};
+		openaiService.textDoneCallback = () => {
+			setProcessingChatMessageIndex(chatMessages.length + 1);
+		};
+	}
+
+	const handleSendMessage = async (message: string) => {
+		try {
+			setChatMessages((prev) => [
+				...prev,
+				{ content: message, sender: "User" },
+			]);
+			console.log("handleSendMessage", message);
+			await openaiService.sendMessage(message);
+		} catch (error) {
+			console.error("メッセージの送信に失敗しました:", error);
+		}
 	};
 
 	useEffect(() => {
-		const loadAllFiles = async () => {
+		const loadPrompts = async () => {
 			try {
-				setIsLoading(true);
-
-				// 各カテゴリーのデータを取得
-				const [scenarios, characters, settings] = await Promise.all([
-					fetchScenarios(),
-					fetchCharacters(),
-					fetchSettings(),
-				]);
-				// カテゴリープロパティを追加して結合
-				const allFiles = [
-					...scenarios.map((s) => ({
-						...s,
-						category: "scenario" as FileCategory,
-					})),
-					...characters.map((c) => ({
-						...c,
-						category: "character" as FileCategory,
-					})),
-					...settings.map((s) => ({
-						...s,
-						category: "setting" as FileCategory,
-					})),
-				];
-				if (allFiles.length > 0) {
-					setFiles(allFiles);
-					setActiveFileId(allFiles[0].id);
-				}
+				const prompts = await fetchPrompts();
+				setPrompts(prompts);
 			} catch (error) {
-				console.error("Failed to load files:", error);
-				setError("ファイルの読み込みに失敗しました");
-			} finally {
-				setIsLoading(false);
+				console.error("プロンプトの読み込みに失敗しました:", error);
+				setLoadingErrors((prev) => [
+					...prev,
+					"プロンプトの読み込みに失敗しました",
+				]);
 			}
 		};
-
-		loadDefaultPrompts();
-		loadAllFiles();
+		const loadDefaultPrompts = async () => {
+			try {
+				const defaultPrompts = await fetchDefaultPrompts();
+				setDefaultPrompts(defaultPrompts);
+			} catch (error) {
+				console.error("デフォルトプロンプトの読み込みに失敗しました:", error);
+				setLoadingErrors((prev) => [
+					...prev,
+					"デフォルトプロンプトの読み込みに失敗しました",
+				]);
+			}
+		};
+		const loadFiles = async () => {
+			try {
+				const files = await fetchFiles();
+				setFiles(files);
+			} catch (error) {
+				console.error("ファイルの読み込みに失敗しました:", error);
+				setLoadingErrors((prev) => [
+					...prev,
+					"ファイルの読み込みに失敗しました",
+				]);
+			}
+		};
+		const loadAll = async () => {
+			setIsLoading(true);
+			await loadPrompts();
+			await loadDefaultPrompts();
+			await loadFiles();
+			setIsLoading(false);
+		};
+		loadAll();
 	}, []);
 
-	const loadPrompts = useCallback(async () => {
-		try {
-			const loadedPrompts = await fetchPrompts();
-			setPrompts(loadedPrompts);
-		} catch (error) {
-			console.error("Failed to load prompts:", error);
+	const updateDirtyFiles = (fileId: string, isDirty: boolean) => {
+		let file = files.find((file) => file.id === fileId);
+		if (!file) return;
+		setFiles(
+			files.map((file) => {
+				if (file.id === fileId) {
+					return { ...file, isDirty };
+				}
+				return file;
+			})
+		);
+		const hasChildrenDirty = (file: FlattenedItem): boolean => {
+			const childrenIds = files
+				.filter((f) => f.parentId === file.id)
+				.map((f) => f.id);
+			if (childrenIds.length === 0) return file.isDirty;
+			return childrenIds.some((childId) => {
+				const child = files.find((file) => file.id === childId);
+				if (!child) return file.isDirty;
+				return hasChildrenDirty(child);
+			});
+		};
+		while (file.parentId) {
+			const parentId = file.parentId;
+			file = files.find((file) => file.id === parentId);
+			if (!file) return;
+			setFiles(
+				files.map((file) => {
+					if (file.id === fileId) {
+						return { ...file, isDirty: hasChildrenDirty(file) };
+					}
+					return file;
+				})
+			);
 		}
-	}, []);
+	};
+
+	const handleFileToggle = (fileId: string) => {
+		setFiles(
+			files.map((file) =>
+				file.id === fileId
+					? {
+							...file,
+							isToggleOpen: !file.isToggleOpen,
+					  }
+					: file
+			)
+		);
+	};
+
+	const handleContentOpen = (fileId: string) => {
+		console.log("handleContentOpen", fileId);
+		setFiles(
+			files.map((file) =>
+				file.id === fileId
+					? {
+							...file,
+							isContentOpen: true,
+					  }
+					: {
+							...file,
+							isContentOpen: false,
+					  }
+			)
+		);
+	};
 
 	useEffect(() => {
-		loadPrompts();
-	}, [loadPrompts]);
-
-	const handleFileSelect = (fileId: string) => {
-		setActiveFileId(fileId);
-	};
-
-	const handleDragEnd = (result: DropResult) => {
-		if (!result.destination) return;
-
-		const items = Array.from(files);
-		const [reorderedItem] = items.splice(result.source.index, 1);
-		items.splice(result.destination.index, 0, reorderedItem);
-
-		setFiles(items);
-	};
-
-	const handleContentChange = async (content: string) => {
-		const file = files.find((f) => f.id === activeFileId);
-		if (file && content === file.content) return;
-		setDirtyFiles((prev) => new Set(prev).add(activeFileId));
-		setFiles(
-			files.map((file) =>
-				file.id === activeFileId ? { ...file, content } : file
-			)
-		);
-	};
-
-	const handleAddFile = async (category: FileCategory) => {
-		const newFile: FileData = {
-			id: uuidv4(),
-			name: `新規${getCategoryName(category)}_${
-				files.filter((f) => f.category === category).length + 1
-			}`,
-			category: category,
-			content: "",
+		const rootItems = files.filter((file) => file.parentId === null);
+		const childrenItems = (file: FlattenedItem): TreeItems => {
+			if (!file.childrenIds || file.childrenIds.length === 0) return [];
+			const children = files.filter((f) => file.childrenIds.includes(f.id));
+			return children.map((child) => ({
+				...child,
+				children: childrenItems(child),
+			}));
 		};
-		if (category === "scenario") {
-			const savedFile = await createScenario(newFile);
-			setFiles([...files, { ...savedFile, category }]);
-		} else if (category === "character") {
-			const savedFile = await createCharacter(newFile);
-			setFiles([...files, { ...savedFile, category }]);
-		} else if (category === "setting") {
-			const savedFile = await createSetting(newFile);
-			setFiles([...files, { ...savedFile, category }]);
-		}
-	};
+		const treeItems = rootItems.map((file) => {
+			return {
+				...file,
+				children: childrenItems(file),
+			};
+		});
+		setTreeItems(treeItems);
+	}, [files]);
 
-	const handleAddFolder = async (category: FileCategory) => {
-		console.log("add folder", category);
-	};
-
-	const handleDeleteFile = async (fileId: string, category: FileCategory) => {
-		if (category === "scenario") {
-			await deleteScenario(fileId);
-		} else if (category === "character") {
-			await deleteCharacter(fileId);
-		} else if (category === "setting") {
-			await deleteSetting(fileId);
+	const handleCreateFile = async (parentId: string, isFolder: boolean) => {
+		console.log("createFile", parentId, isFolder);
+		const existingFileNames = files.map((file) => file.name);
+		let newFileName = "新規ファイル";
+		let counter = 1;
+		while (existingFileNames.includes(newFileName)) {
+			newFileName = `新規ファイル(${counter})`;
+			counter++;
 		}
-		setFiles(files.filter((file) => file.id !== fileId));
-	};
-
-	const handleRenameFile = async (
-		fileId: string,
-		newName: string,
-		category: FileCategory
-	) => {
-		if (category === "scenario") {
-			await renameScenario(fileId, newName);
-		} else if (category === "character") {
-			await renameCharacter(fileId, newName);
-		} else if (category === "setting") {
-			await renameSetting(fileId, newName);
-		}
+		const newFile = {
+			id: uuidv4(),
+			name: newFileName,
+			parentId: parentId,
+			childrenIds: [],
+			content: "",
+			isDirty: false,
+			isToggleOpen: false,
+			isContentOpen: false,
+			depth: 0,
+			index: 0,
+		};
 		setFiles(
-			files.map((file) =>
-				file.id === fileId ? { ...file, name: newName } : file
+			files.map((file) => {
+				if (file.id === parentId) {
+					return { ...file, childrenIds: [...file.childrenIds, newFile.id] };
+				}
+				return file;
+			})
+		);
+		setFiles([...files, newFile]);
+	};
+
+	const handleUpdateFile = async (id: string, content: string) => {
+		console.log("%cupdateFile " + id + " " + content, "color: green;");
+		setFiles(
+			files.map((f) => {
+				if (f.id === id) {
+					console.log("updateFile", f.id, content);
+					return { ...f, content, isDirty: true };
+				}
+				return f;
+			})
+		);
+		console.log(files);
+		// updateDirtyFiles(id, true);
+	};
+
+	const handleUpdatePrompt = async (id: string, content: string) => {
+		console.log("updatePrompt", id, content);
+		const updatedPrompt = prompts.find((prompt) => prompt.id === id);
+		if (!updatedPrompt) return;
+		setPrompts(
+			prompts.map((prompt) =>
+				prompt.id === id ? { ...prompt, content } : prompt
 			)
 		);
 	};
 
-	const handleSavePrompts = async (newPrompts: Prompt[]) => {
-		try {
-			const updatedPrompt = newPrompts.find(
-				(newPrompt, index) => newPrompt.content !== prompts[index].content
-			);
-
-			if (updatedPrompt) {
-				await updatePrompt(updatedPrompt.id, updatedPrompt.content);
-				await loadPrompts();
-			}
-		} catch (error) {
-			console.error("Failed to save prompt:", error);
-		}
-	};
-
-	const handleSave = async () => {
-		const file = files.find((f) => f.id === activeFileId);
+	const handleSaveFile = async (id: string) => {
+		console.log("%csaveFile " + id, "color: green;");
+		const file = files.find((f) => f.id === id);
 		if (!file) return;
-
-		await handleContentChange(file.content);
-		if (file.category === "scenario") {
-			await updateScenario(activeFileId, file.content);
-		} else if (file.category === "character") {
-			await updateCharacter(activeFileId, file.content);
-		} else if (file.category === "setting") {
-			await updateSetting(activeFileId, file.content);
-		}
-		setDirtyFiles((prev) => {
-			const next = new Set(prev);
-			next.delete(activeFileId);
-			return next;
-		});
+		await updateFileContent(id, file.content);
 	};
 
-	const activeFile = files.find((file) => file.id === activeFileId);
-
-	const getCategoryName = (category: FileCategory): string => {
-		switch (category) {
-			case "character":
-				return "キャラクター";
-			case "setting":
-				return "設定";
-			case "scenario":
-				return "シナリオ";
-		}
+	const handleSavePrompt = async (id: string) => {
+		console.log("savePrompt", id);
+		const prompt = prompts.find((p) => p.id === id);
+		if (!prompt) return;
+		await updatePrompt(id, prompt.content);
 	};
 
-	const handleSettingsClick = () => {
-		setIsPromptModalOpen(true);
+	const handleInitiate = async () => {
+		setFiles([]);
+		await deleteAllFiles();
 	};
+
+	const handleContextMenu = (event: React.MouseEvent) => {
+		event.preventDefault();
+		setContextMenuPosition({ x: event.clientX, y: event.clientY });
+	};
+
+	const handleCloseContextMenu = () => {
+		setContextMenuPosition(null);
+	};
+
+	const openedFile = files.find((file) => file.isContentOpen);
 
 	return (
-		<DragDropContext onDragEnd={handleDragEnd}>
-			<div className={styles.container}>
-				<Header onSettingsClick={handleSettingsClick} />
-				{isLoading ? (
-					<div>Loading...</div>
-				) : error ? (
-					<div style={{ color: "red" }}>{error}</div>
-				) : (
-					<div className={styles.mainSection}>
-						<Sidebar
-							files={files}
-							activeFileId={activeFileId}
-							onFileSelect={handleFileSelect}
-							onAddFile={handleAddFile}
-							onAddFolder={handleAddFolder}
-							onRenameFile={handleRenameFile}
-							onDeleteFile={handleDeleteFile}
-							setFiles={setFiles}
-							dirtyFiles={dirtyFiles}
-						/>
-						<Editor
-							content={activeFile?.content ?? ""}
-							category={activeFile?.category ?? "scenario"}
-							onContentChange={handleContentChange}
-							systemPrompts={prompts}
-							allFiles={files}
-							currentFileName={activeFile?.name ?? ""}
-							onSave={handleSave}
-							isDirty={dirtyFiles.has(activeFileId)}
-							isAutoCompletionEnabled={isAutoCompletionEnabled}
-							setIsAutoCompletionEnabled={setIsAutoCompletionEnabled}
-						/>
-					</div>
-				)}
-				<SettingsModal
-					isOpen={isPromptModalOpen}
-					onClose={() => setIsPromptModalOpen(false)}
-					prompts={prompts}
-					onSavePrompts={handleSavePrompts}
-					defaultPrompts={defaultPrompts}
+		<div className={styles.container}>
+			<Header setIsModalOpen={setIsModalOpen} />
+			{isLoading && <div className={styles.loading}>Loading...</div>}
+			{loadingErrors.length > 0 && (
+				<div className={styles.error}>{loadingErrors.join("\n")}</div>
+			)}
+			<div className={styles.mainSection}>
+				<Sidebar
+					treeItems={treeItems}
+					// activeFileId={openedFile?.id.toString()}
+					// handleFileToggle={handleFileToggle}
+					handleContentOpen={handleContentOpen}
+					handleCreateFile={handleCreateFile}
+					// handleRenameFile={handleRenameFile}
+					// handleDeleteFile={handleDeleteFile}
+					setTreeItems={setTreeItems}
+					setContextMenuItems={setContextMenuItems}
+					handleContextMenu={handleContextMenu}
+					handleCloseContextMenu={handleCloseContextMenu}
+				/>
+				<Editor
+					content={openedFile?.content ?? ""}
+					onContentChange={(content) =>
+						handleUpdateFile(openedFile?.id.toString() ?? "", content)
+					}
+					systemPrompts={prompts}
+					files={files}
+					currentFileName={openedFile?.name ?? ""}
+					onSave={() => handleSaveFile(openedFile?.id.toString() ?? "")}
+					isDirty={openedFile?.isDirty ?? false}
+					isAutoCompletionEnabled={isAutoCompletionEnabled}
+					setIsAutoCompletionEnabled={setIsAutoCompletionEnabled}
+				/>
+				<ChatSidebar
+					messages={chatMessages}
+					onSendMessage={handleSendMessage}
+					openaiService={openaiService}
 				/>
 			</div>
-		</DragDropContext>
+			{isModalOpen && (
+				<SettingsModal
+					onClose={() => setIsModalOpen(false)}
+					prompts={prompts}
+					defaultPrompts={defaultPrompts}
+					handleUpdatePrompt={handleUpdatePrompt}
+					handleSavePrompt={handleSavePrompt}
+					handleInitiate={handleInitiate}
+				/>
+			)}
+			{contextMenuPosition && (
+				<ContextMenu
+					items={contextMenuItems}
+					position={contextMenuPosition}
+					onClose={handleCloseContextMenu}
+				/>
+			)}
+		</div>
 	);
 };
 

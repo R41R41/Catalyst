@@ -1,22 +1,26 @@
 import React from "react";
-import { KeyboardArrowRight } from "@mui/icons-material";
+import { KeyboardArrowRightRounded } from "@mui/icons-material";
 import styles from "./ToggleIcon.module.scss";
 
 interface ToggleIconProps {
-  isExpanded: boolean;
-  className?: string;
+	isExpanded: boolean;
+	handleTabToggle: (id: string) => void;
+	id: string;
 }
 
 export const ToggleIcon: React.FC<ToggleIconProps> = ({
-  isExpanded,
-  className = "",
+	isExpanded,
+	handleTabToggle,
+	id,
 }) => {
-  return (
-    <KeyboardArrowRight
-      className={`${styles.toggleIcon} ${
-        isExpanded ? styles.expanded : ""
-      } ${className}`}
-      sx={{ transition: "transform 0.3s ease" }}
-    />
-  );
+	return (
+		<KeyboardArrowRightRounded
+			className={`${styles.toggleIcon} ${isExpanded ? styles.expanded : ""}`}
+			sx={{
+				transition: "transform 0.3s ease",
+				fontSize: "medium",
+			}}
+			onClick={() => handleTabToggle(id)}
+		/>
+	);
 };

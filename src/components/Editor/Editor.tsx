@@ -24,18 +24,16 @@ import { BlockNoteView } from "@blocknote/mantine";
 import "./Editor.css";
 import React, { useEffect, useRef, useCallback, useState } from "react";
 import { getCompletion, findRelatedContents } from "@/services/openai.js";
-import { Prompt } from "@/services/promptApi.js";
-import { FileCategory, FileData } from "@/types/File.js";
+import { FlattenedItem, PromptType } from "@/types/CommonTypes.js";
 import completionTextSpec from "./AiCompletion.js";
 import { Checkbox } from "@mui/material";
 import { AiRewrite } from "./AiRewrite.js";
 
 interface EditorProps {
 	content: string;
-	category: FileCategory;
 	onContentChange: (content: string) => void;
-	systemPrompts: Prompt[];
-	allFiles: FileData[];
+	systemPrompts: PromptType[];
+	files: FlattenedItem[];
 	currentFileName: string;
 	onSave: () => void;
 	isDirty: boolean;
@@ -44,15 +42,17 @@ interface EditorProps {
 }
 const Editor: React.FC<EditorProps> = ({
 	content,
-	category,
 	onContentChange,
 	systemPrompts,
-	allFiles,
+	files,
 	currentFileName,
 	onSave,
 	isAutoCompletionEnabled,
 	setIsAutoCompletionEnabled,
 }) => {
+	// console.log("Editor");
+	// console.log("content", content);
+	const [isLoading, setIsLoading] = useState(false);
 	const schema = BlockNoteSchema.create({
 		inlineContentSpecs: {
 			// Adds all default inline content.
@@ -65,7 +65,6 @@ const Editor: React.FC<EditorProps> = ({
 	const editor = useCreateBlockNote({ schema });
 	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const originalContentRef = useRef<string>("");
-	const [isLoading, setIsLoading] = useState(false);
 	const [isRAG, setIsRAG] = useState(false);
 
 	useEffect(() => {
@@ -134,13 +133,13 @@ const Editor: React.FC<EditorProps> = ({
 					relatedContents = await findRelatedContents(
 						currentFileName,
 						inputText,
-						allFiles
+						files
 					);
 					console.log("%cRAG 終了", "color: green");
 				}
 
 				const systemPrompt = systemPrompts.find(
-					(prompt) => prompt.name === `predict_${category}`
+					(prompt) => prompt.name === `predict`
 				);
 
 				if (!systemPrompt) {
@@ -151,8 +150,7 @@ const Editor: React.FC<EditorProps> = ({
 
 				console.log("%c補完生成 開始", "color: blue");
 				const result = await getCompletion(
-					currentFileName,
-					inputText,
+					inputText + "currentFileName:" + currentFileName,
 					systemPrompt,
 					relatedContents
 				);
@@ -268,9 +266,8 @@ const Editor: React.FC<EditorProps> = ({
 							{/* Extra button to toggle blue text & background */}
 							<AiRewrite
 								key={"customButton"}
-								category={category}
 								systemPrompts={systemPrompts}
-								allFiles={allFiles}
+								files={files}
 								currentFileName={currentFileName}
 								isRAG={isRAG}
 								removeAiCompletion={removeAiCompletion}

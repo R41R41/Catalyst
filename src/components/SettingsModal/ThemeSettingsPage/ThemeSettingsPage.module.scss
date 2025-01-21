@@ -1,0 +1,27 @@
+@use "@/styles/variables";
+
+.themeSettings {
+	padding: 20px;
+
+	h2 {
+		margin-bottom: 20px;
+		color: var(--color-text-primary);
+	}
+}
+
+.themeOption {
+	display: flex;
+	gap: 20px;
+
+	label {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		cursor: pointer;
+		color: var(--color-text-primary);
+	}
+
+	input[type="radio"] {
+		cursor: pointer;
+	}
+}

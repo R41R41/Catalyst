@@ -3,6 +3,7 @@
 	height: 100vh;
 	display: flex;
 	flex-direction: column;
+	position: relative;
 }
 
 .bn-editor {
@@ -12,10 +13,10 @@
 }
 
 .completion-button {
-	position: fixed;
+	position: absolute;
 	display: flex;
 	flex-direction: row;
-	bottom: 72px;
+	bottom: 122px;
 	right: 20px;
 	padding: 10px 20px;
 	background-color: #007bff;
@@ -47,10 +48,10 @@
 }
 
 .button-container {
-	position: fixed;
+	position: absolute;
 	display: flex;
 	flex-direction: column;
-	bottom: 12px;
+	bottom: 62px;
 	right: 24px;
 }
 

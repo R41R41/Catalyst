@@ -1,17 +1,14 @@
 import { useBlockNoteEditor, useComponentsContext } from "@blocknote/react";
 import "@blocknote/mantine/style.css";
 import React from "react";
-import { FileCategory } from "@/types/File.js";
-import { Prompt } from "@/services/promptApi.js";
-import { FileData } from "@/types/File.js";
+import { FileType, PromptType } from "@/types/CommonTypes.js";
 import { getCompletion, findRelatedContents } from "@/services/openai.js";
 import { Block } from "@blocknote/core";
 
 interface AiRewriteProps {
 	isRAG: boolean;
-	category: FileCategory;
-	systemPrompts: Prompt[];
-	allFiles: FileData[];
+	systemPrompts: PromptType[];
+	files: FileType[];
 	currentFileName: string;
 	removeAiCompletion: () => void;
 	setIsLoading: (isLoading: boolean) => void;
@@ -21,9 +18,8 @@ interface AiRewriteProps {
 // Custom Formatting Toolbar Button to toggle blue text & background color.
 export function AiRewrite({
 	isRAG,
-	category,
 	systemPrompts,
-	allFiles,
+	files,
 	currentFileName,
 	removeAiCompletion,
 	setIsLoading,
@@ -51,13 +47,13 @@ export function AiRewrite({
 				relatedContents = await findRelatedContents(
 					currentFileName,
 					inputText,
-					allFiles
+					files
 				);
 				console.log("%cRAG 終了", "color: green");
 			}
 
 			const systemPrompt = systemPrompts.find(
-				(prompt) => prompt.name === `rewrite_${category}`
+				(prompt) => prompt.name === `rewrite`
 			);
 
 			if (!systemPrompt) {

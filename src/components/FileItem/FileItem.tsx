@@ -1,26 +1,23 @@
 import React, { useState } from "react";
 import { DraggableProvided, DraggableStateSnapshot } from "@hello-pangea/dnd";
-import { FileCategory } from "@/types/File.js";
 import { ContextMenu } from "@/components/common/ContextMenu.js";
 import styles from "./FileItem.module.scss";
 
 interface FileItemProps {
 	id: string;
 	name: string;
-	category: FileCategory;
 	isActive: boolean;
 	provided: DraggableProvided;
 	snapshot: DraggableStateSnapshot;
 	onClick: () => void;
-	onRename: (fileId: string, newName: string, category: FileCategory) => void;
-	onDelete: (fileId: string, category: FileCategory) => void;
+	onRename: (fileId: string, newName: string) => void;
+	onDelete: (fileId: string) => void;
 	isDirty: boolean;
 }
 
 const FileItem: React.FC<FileItemProps> = ({
 	id,
 	name,
-	category,
 	isActive,
 	provided,
 	snapshot,
@@ -50,7 +47,7 @@ const FileItem: React.FC<FileItemProps> = ({
 		{
 			label: "削除",
 			onClick: () => {
-				onDelete(id, category);
+				onDelete(id);
 				setShowMenu(false);
 			},
 		},
@@ -73,12 +70,12 @@ const FileItem: React.FC<FileItemProps> = ({
 					value={editName}
 					onChange={(e) => setEditName(e.target.value)}
 					onBlur={() => {
-						onRename(id, editName, category);
+						onRename(id, editName);
 						setIsEditing(false);
 					}}
 					onKeyPress={(e) => {
 						if (e.key === "Enter") {
-							onRename(id, editName, category);
+							onRename(id, editName);
 							setIsEditing(false);
 						}
 					}}

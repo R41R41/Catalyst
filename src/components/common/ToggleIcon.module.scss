@@ -1,7 +1,10 @@
 @use "@/styles/variables";
 
 .toggleIcon {
+  width: 16px;
+  height: 16px;
   &.expanded {
     transform: rotate(90deg);
   }
+  margin-right: 8px;
 }
